@@ -3,7 +3,7 @@ import time
 import tkinter as tk
 from tkinter import messagebox
 
-def initialize_serial(port, baudrate=9600, timeout=1):
+def initialize_serial(port, baudrate=9600, timeout=1) -> serial.Serial | None:
     """Initialize the serial connection."""
     try:
         ser = serial.Serial(port, baudrate=baudrate, timeout=timeout)
@@ -13,7 +13,7 @@ def initialize_serial(port, baudrate=9600, timeout=1):
         print(f"Error opening serial port: {e}")
         return None
 
-def send_command(ser, command):
+def send_command(ser: serial.Serial, command) -> str | None:
     """Send a command to the device and read the response."""
     if not ser:
         print("Serial port not initialized.")
@@ -31,12 +31,12 @@ def send_command(ser, command):
         print(f"Error sending command: {e}")
         return None
 
-def get_status(ser):
+def get_status(ser) -> str | None:
     """Get the status of the device."""
     response = send_command(ser, "X81")
     return response
 
-def set_motor_speed(ser, speed):
+def set_motor_speed(ser, speed) -> str | None:
     """Set the motor speed in steps per second."""
     if speed > 3200:
         speed = 3200
@@ -49,17 +49,17 @@ def set_motor_speed(ser, speed):
     response = send_command(ser, command)
     return response
 
-def move_clockwise(ser):
+def move_clockwise(ser) -> str | None:
     """Move the motor clockwise."""
     response = send_command(ser, "X81C+")
     return response
 
-def move_counter_clockwise(ser):
+def move_counter_clockwise(ser) -> str | None:
     """Move the motor counter-clockwise."""
     response = send_command(ser, "X81C-")
     return response
 
-def abort_movement(ser):
+def abort_movement(ser) -> str | None:
     """Abort/stop motor movement."""
     response = send_command(ser, "X81!")
     return response
@@ -69,7 +69,7 @@ def create_gui(serial_connection):
     direction = ["clockwise"]  # List to store the current direction
     motor_running = [False]
 
-    def update_speed(event=None):
+    def update_speed(event=None) -> None:
         try:
             speed = int(speed_entry.get())
             if speed > 3200:
@@ -86,7 +86,7 @@ def create_gui(serial_connection):
         except ValueError:
             messagebox.showerror("Error", "Invalid speed input")
 
-    def start_motor():
+    def start_motor() -> None:
         try:
             speed = int(speed_entry.get())
             if speed > 3200:
@@ -106,12 +106,12 @@ def create_gui(serial_connection):
         except ValueError:
             messagebox.showerror("Error", "Invalid speed input")
 
-    def stop_motor():
+    def stop_motor() -> None:
         abort_movement(serial_connection)
         motor_running[0] = False
         # messagebox.showinfo("Info", "Motor stopped")
 
-    def change_direction():
+    def change_direction() -> None:
         if motor_running[0]:
             if direction[0] == "clockwise":
                 direction[0] = "counter-clockwise"

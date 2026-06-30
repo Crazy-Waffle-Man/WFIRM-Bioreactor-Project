@@ -1,0 +1,7 @@
+{
+    "get_status": "X81",
+    "set_motor_speed": "X81E",
+    "turn_cw": "X81C+",
+    "turn_ccw": "X81C-",
+    "stop": "X81!"
+}
