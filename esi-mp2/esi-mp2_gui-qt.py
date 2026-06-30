@@ -1,7 +1,9 @@
-from PyQt6.QtWidgets import QMainWindow, QPushButton, QSlider, QTextEdit, QLabel, QLayout, QMessageBox, QWidget
+from PyQt6.QtWidgets import QMainWindow, QPushButton, QSlider, QTextEdit, QLabel, QApplication, QLayout, QMessageBox, QWidget
 from PyQt6.QtCore import QSize, Qt
 from typing import Callable
-import serial, time
+import time
+import serial
+from serial import SerialException
 
 class MainWindow(QMainWindow):
     def __init__(self, serial_port: str = "COM17") -> None:
@@ -67,9 +69,9 @@ class AutoSerial(serial.Serial):
     def __init__(self, port, baudrate = 9600, connect_timeout = 1, response_timeout = 0.1):
         self.response_timeout = response_timeout
         try:
-            super.__init__(port, baudrate, connect_timeout)
+            super().__init__(port = port, baudrate = baudrate, timeout = connect_timeout)
             print(f"Connected to {port}")
-        except serial.SerialException as e:
+        except SerialException as e:
             print(f"Failed to connect to port {port}: {e}")
     
     def send_command(self, command: str) -> str | None:
@@ -103,3 +105,10 @@ class ESI_MP2:
         return self.serial.send_command("X81C-")
     def stop(self):
         return self.serial.send_command("X81C!")
+
+app = QApplication([])
+
+window = MainWindow()
+window.show()
+
+app.exec()
