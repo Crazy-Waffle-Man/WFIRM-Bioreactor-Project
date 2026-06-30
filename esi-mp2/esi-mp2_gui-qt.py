@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QMainWindow, QPushButton, QSlider, QTextEdit, QLabel, QApplication, QLayout, QMessageBox, QWidget
+from PyQt6.QtWidgets import QMainWindow, QPushButton, QSlider, QTextEdit, QLabel, QApplication, QMessageBox, QHBoxLayout, QVBoxLayout, QWidget
 from PyQt6.QtCore import QSize, Qt
 from typing import Callable
 import time
@@ -15,17 +15,21 @@ class MainWindow(QMainWindow):
         self.show()
 
     def setup_widgets(self):
-        #TODO: Layout
+        main_widget = QWidget(self)
+        direction_controls = QWidget(main_widget)
+        speed_controls = QWidget(main_widget)
+        speed_buttons = QWidget(speed_controls)
+
         message_box = QMessageBox()
 
-        stop_movement_button: QPushButton = QPushButton()
+        stop_movement_button: QPushButton = QPushButton(direction_controls)
         stop_movement_button.setText("Stop Movement")
         def stop():
             message_box.setText(self.motor.stop())
             message_box.show()
         stop_movement_button.pressed.connect(stop)
 
-        direction_button: QPushButton = QPushButton()
+        direction_button: QPushButton = QPushButton(direction_controls)
         direction_button.setCheckable(True)
         get_direction: Callable = lambda: "ccw" if direction_button.isChecked() else "cw"
         direction_button.setText(f"Currently turning {get_direction()}. Press to toggle.")
@@ -40,21 +44,22 @@ class MainWindow(QMainWindow):
             message_box.show()
         direction_button.toggled.connect(toggle_direction)
         
-        status_button = QPushButton()
+        status_button = QPushButton(direction_controls)
         status_button.setText("Get status")
         def get_status():
             message_box.setText(self.motor.get_status())
             message_box.show()
         status_button.pressed.connect(get_status)
 
-        motor_speed_slider = QSlider()
+        motor_speed_slider = QSlider(speed_controls)
         motor_speed_slider.setRange(1, 3199)
-        mss_label = QLabel()
+        motor_speed_slider.setOrientation(Qt.Orientation.Horizontal)
+        mss_label = QLabel(speed_controls)
         motor_speed_slider.valueChanged.connect(lambda: mss_label.setText(f"Current speed: {motor_speed_slider.value()}"))
         
-        motor_speed_button = QPushButton()
+        motor_speed_button = QPushButton(speed_buttons)
         motor_speed_button.setText("Set motor speed")
-        motor_speed_auto_button = QPushButton()
+        motor_speed_auto_button = QPushButton(speed_buttons)
         motor_speed_auto_button.setText("Motor speed auto-adjusts")
         motor_speed_auto_button.setCheckable(True)
         
@@ -64,6 +69,32 @@ class MainWindow(QMainWindow):
         def auto_adjust_speed():
             if motor_speed_auto_button.isChecked(): update_speed()
         motor_speed_slider.valueChanged.connect(auto_adjust_speed)
+
+        #Layout
+        layout = QHBoxLayout()
+        layout.addWidget(motor_speed_button)
+        layout.addWidget(motor_speed_auto_button)
+        speed_buttons.setLayout(layout)
+
+        layout = QVBoxLayout()
+        layout.addWidget(speed_buttons)
+        layout.addWidget(mss_label)
+        layout.addWidget(motor_speed_slider)
+        speed_controls.setLayout(layout)
+
+        layout = QHBoxLayout()
+        layout.addWidget(direction_button)
+        layout.addWidget(stop_movement_button)
+        layout.addWidget(status_button)
+        direction_controls.setLayout(layout)
+
+        layout = QVBoxLayout()
+        layout.addWidget(direction_controls)
+        layout.addWidget(speed_controls)
+        main_widget.setLayout(layout)
+
+        self.setCentralWidget(main_widget)
+        
 
 class AutoSerial(serial.Serial):
     def __init__(self, port, baudrate = 9600, connect_timeout = 1, response_timeout = 0.1):
