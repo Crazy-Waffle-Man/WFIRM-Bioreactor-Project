@@ -63,10 +63,6 @@ class MainWindow(QMainWindow):
             if motor_speed_auto_button.isChecked(): update_speed()
         motor_speed_slider.valueChanged.connect(auto_adjust_speed)
 
-
-
-
-
 class AutoSerial(serial.Serial):
     def __init__(self, port, baudrate = 9600, connect_timeout = 1, response_timeout = 0.1):
         self.response_timeout = response_timeout
