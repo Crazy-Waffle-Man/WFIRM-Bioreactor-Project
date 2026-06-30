@@ -76,7 +76,7 @@ class MainWindow(QMainWindow):
 
         layout = QVBoxLayout()
         layout.addWidget(speed_buttons)
-        layout.addWidget(mss_label)
+        layout.addWidget(mss_label, alignment=Qt.AlignmentFlag.AlignHCenter)
         layout.addWidget(motor_speed_slider)
         speed_controls.setLayout(layout)
 
