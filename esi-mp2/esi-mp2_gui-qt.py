@@ -25,8 +25,7 @@ class MainWindow(QMainWindow):
         stop_movement_button: QPushButton = QPushButton(direction_controls)
         stop_movement_button.setText("Stop Movement")
         def stop():
-            message_box.setText(self.motor.stop())
-            message_box.show()
+            message_box.information(None, "Result", self.motor.stop(), QMessageBox.StandardButton.Ok, QMessageBox.StandardButton.Ok)
         stop_movement_button.pressed.connect(stop)
 
         direction_button: QPushButton = QPushButton(direction_controls)
@@ -40,15 +39,13 @@ class MainWindow(QMainWindow):
             else:
                 self.motor.stop()
                 response = self.motor.turn_ccw()
-            message_box.setText(response)
-            message_box.show()
+            message_box.information(None, "Result", response, QMessageBox.StandardButton.Ok, QMessageBox.StandardButton.Ok)
         direction_button.toggled.connect(toggle_direction)
         
         status_button = QPushButton(direction_controls)
         status_button.setText("Get status")
         def get_status():
-            message_box.setText(self.motor.get_status())
-            message_box.show()
+            message_box.information(None, "Result", self.motor.get_status(), QMessageBox.StandardButton.Ok, QMessageBox.StandardButton.Ok)
         status_button.pressed.connect(get_status)
 
         motor_speed_slider = QSlider(speed_controls)
@@ -56,6 +53,7 @@ class MainWindow(QMainWindow):
         motor_speed_slider.setOrientation(Qt.Orientation.Horizontal)
         mss_label = QLabel(speed_controls)
         motor_speed_slider.valueChanged.connect(lambda: mss_label.setText(f"Current speed: {motor_speed_slider.value()}"))
+        motor_speed_slider.setValue(1600)
         
         motor_speed_button = QPushButton(speed_buttons)
         motor_speed_button.setText("Set motor speed")
@@ -114,8 +112,7 @@ class AutoSerial(serial.Serial):
             response = self.read(self.in_waiting).decode("ascii").strip()
             return response
         except Exception as e:
-            print(f"Encountered an error when sending command {command.strip()}: {e}")
-            return None
+            return f"Encountered an error when sending command {command.strip()}: {e}"
 
 class ESI_MP2:
     def __init__(self, serial: AutoSerial):
