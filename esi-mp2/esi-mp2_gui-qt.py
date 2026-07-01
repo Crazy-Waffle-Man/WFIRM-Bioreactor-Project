@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QMainWindow, QPushButton, QSlider, QTextEdit, QLabel, QApplication, QMessageBox, QHBoxLayout, QVBoxLayout, QWidget
-from PyQt6.QtCore import QSize, Qt
+from PyQt6.QtCore import Qt, QSize
 from typing import Callable
 import time
 import serial
@@ -16,6 +16,7 @@ class MainWindow(QMainWindow):
 
     def setup_widgets(self):
         main_widget = QWidget(self)
+        main_widget.setMaximumSize(QSize(500, 300))
         direction_controls = QWidget(main_widget)
         speed_controls = QWidget(main_widget)
         speed_buttons = QWidget(speed_controls)
@@ -54,6 +55,24 @@ class MainWindow(QMainWindow):
         mss_label = QLabel(speed_controls)
         motor_speed_slider.valueChanged.connect(lambda: mss_label.setText(f"Current speed: {motor_speed_slider.value()}"))
         motor_speed_slider.setValue(1600)
+
+        mss_textedit = QTextEdit(speed_controls)
+        def apply_mss_textedit(text: str): 
+            # This function is held together by hopes and dreams. Input validation was never my strong suit.
+            result = text.upper().strip()
+            rtemp = text.upper().strip() # Avoid modifying result while iterating over it
+            for char in rtemp: 
+                # O(n^2), I feel like this can be done better, though we'll only really be changing one char at a time so it should only be an issue for very large numbers which will be filtered out later anyway.
+                if char not in "0123456789":
+                    result = result.replace(char, "")
+            if result != text:
+                mss_textedit.setText(result)
+                if result.isdigit():
+                    if int(result) <= 0 or int(result) >= 3200:
+                        return
+                    motor_speed_slider.setValue(int(result))
+        mss_textedit.textChanged.connect(lambda: apply_mss_textedit(mss_textedit.toPlainText()))
+        mss_textedit.setMaximumSize(QSize(100, 30))
         
         motor_speed_button = QPushButton(speed_buttons)
         motor_speed_button.setText("Set motor speed")
@@ -78,6 +97,7 @@ class MainWindow(QMainWindow):
         layout.addWidget(speed_buttons)
         layout.addWidget(mss_label, alignment=Qt.AlignmentFlag.AlignHCenter)
         layout.addWidget(motor_speed_slider)
+        layout.addWidget(mss_textedit, alignment=Qt.AlignmentFlag.AlignHCenter)
         speed_controls.setLayout(layout)
 
         layout = QHBoxLayout()
@@ -90,7 +110,6 @@ class MainWindow(QMainWindow):
         layout.addWidget(direction_controls)
         layout.addWidget(speed_controls)
         main_widget.setLayout(layout)
-
         self.setCentralWidget(main_widget)
         
 
