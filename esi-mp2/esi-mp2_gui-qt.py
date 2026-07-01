@@ -58,13 +58,8 @@ class MainWindow(QMainWindow):
 
         mss_textedit = QTextEdit(speed_controls)
         def apply_mss_textedit(text: str): 
-            # This function is held together by hopes and dreams. Input validation was never my strong suit.
             result = text.upper().strip()
-            rtemp = text.upper().strip() # Avoid modifying result while iterating over it
-            for char in rtemp: 
-                # O(n^2), I feel like this can be done better, though we'll only really be changing one char at a time so it should only be an issue for very large numbers which will be filtered out later anyway.
-                if char not in "0123456789":
-                    result = result.replace(char, "")
+            result = "".join([char for char in result if char.isdigit()])
             if result != text:
                 mss_textedit.setText(result)
                 if result.isdigit():
