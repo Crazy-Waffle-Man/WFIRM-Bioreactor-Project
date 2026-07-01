@@ -31,15 +31,15 @@ class MainWindow(QMainWindow):
 
         direction_button: QPushButton = QPushButton(direction_controls)
         direction_button.setCheckable(True)
-        get_direction: Callable = lambda: "ccw" if direction_button.isChecked() else "cw"
-        direction_button.setText(f"Currently turning {get_direction()}. Press to toggle.")
+        direction_button.setText(f"Currently turning {'clockwise' if direction_button.isChecked() else 'counterclockwise'}. Press to toggle.")
+        direction_button.toggled.connect(lambda: direction_button.setText(f"Currently turning {'clockwise' if direction_button.isChecked() else 'counterclockwise'}. Press to toggle."))
         def toggle_direction():
-            if get_direction == "ccw":
-                self.motor.stop()
-                response = self.motor.turn_cw()
-            else:
+            if direction_button.isChecked():
                 self.motor.stop()
                 response = self.motor.turn_ccw()
+            else:
+                self.motor.stop()
+                response = self.motor.turn_cw()
             message_box.information(None, "Result", response, QMessageBox.StandardButton.Ok, QMessageBox.StandardButton.Ok)
         direction_button.toggled.connect(toggle_direction)
         
@@ -54,10 +54,10 @@ class MainWindow(QMainWindow):
         motor_speed_slider.setOrientation(Qt.Orientation.Horizontal)
         mss_label = QLabel(speed_controls)
         motor_speed_slider.valueChanged.connect(lambda: mss_label.setText(f"Current speed: {motor_speed_slider.value()}"))
-        motor_speed_slider.setValue(1600)
+        motor_speed_slider.setValue(100)
 
         mss_textedit = QTextEdit(speed_controls)
-        def apply_mss_textedit(text: str): 
+        def apply_mss_textedit(text: str):
             result = text.upper().strip()
             result = "".join([char for char in result if char.isdigit()])
             if result != text:
@@ -77,7 +77,7 @@ class MainWindow(QMainWindow):
         
         def update_speed():
             self.motor.set_motor_speed(motor_speed_slider.value())
-
+        motor_speed_button.pressed.connect(update_speed)
         def auto_adjust_speed():
             if motor_speed_auto_button.isChecked(): update_speed()
         motor_speed_slider.valueChanged.connect(auto_adjust_speed)
@@ -146,11 +146,12 @@ class ESI_MP2:
     def turn_ccw(self):
         return self.serial.send_command("X81C-")
     def stop(self):
-        return self.serial.send_command("X81C!")
+        return self.serial.send_command("X81!")
 
 app = QApplication([])
 
-window = MainWindow()
+port = input("Port: ")
+window = MainWindow(port)
 window.show()
 
 app.exec()
