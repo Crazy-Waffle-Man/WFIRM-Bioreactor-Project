@@ -3,16 +3,19 @@ from sensirion_shdlc_driver import ShdlcSerialPort, ShdlcConnection
 from sensirion_uart_scc1.drivers.scc1_slf3x import Scc1Slf3x
 from sensirion_uart_scc1.drivers.slf_common import get_flow_unit_label
 from sensirion_uart_scc1.scc1_shdlc_device import Scc1ShdlcDevice
+from time import sleep
 
 def read_data_from_sensor(max_reads: int = -1, verbose: bool = False):
     with ShdlcSerialPort(port=input("Sensor port: "), baudrate=115200) as port:
         device = Scc1ShdlcDevice(ShdlcConnection(port), slave_address=0)
         device.set_sensor_type(Scc1Slf3x.SENSOR_TYPE)
         sensor = Scc1Slf3x(device)
+        sleep(1)
         print("serial_number:", sensor.serial_number)
         print("product id:", sensor.product_id)
         print("Flow;\tTemperature;\t Flag")
         flow_scale, unit = sensor.get_flow_unit_and_scale() # pyright: ignore[reportGeneralTypeIssues]
+        sleep(1)
         sensor.start_continuous_measurement(interval_ms=2)
         try:
             if max_reads == -1:
@@ -37,3 +40,6 @@ def read_data_from_sensor(max_reads: int = -1, verbose: bool = False):
                         yield flow / flow_scale
         finally:
             sensor.stop_continuous_measurement()
+
+if __name__ == "__main__":
+    read_data_from_sensor(verbose=True)
