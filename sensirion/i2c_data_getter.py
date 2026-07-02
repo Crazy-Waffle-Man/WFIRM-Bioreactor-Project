@@ -24,7 +24,7 @@ def read_data_from_sensor(max_reads: int = -1, verbose: bool = False):
                     for flow, temperature, flag in data:
                         if verbose:
                             print(f'{flow / flow_scale} {get_flow_unit_label(unit)};\t{temperature / 200} C;\t {flag}')
-                        yield f'{flow / flow_scale} {get_flow_unit_label(unit)};\t{temperature / 200} C;\t {flag}'
+                        yield flow / flow_scale
             else:
                 for _ in range(max_reads):
                     remaining, lost, data = sensor.read_extended_buffer()
@@ -34,6 +34,6 @@ def read_data_from_sensor(max_reads: int = -1, verbose: bool = False):
                     for flow, temperature, flag in data:
                         if verbose:
                             print(f'{flow / flow_scale} {get_flow_unit_label(unit)};\t{temperature / 200} C;\t {flag}')
-                        yield f'{flow / flow_scale} {get_flow_unit_label(unit)};\t{temperature / 200} C;\t {flag}'
+                        yield flow / flow_scale
         finally:
             sensor.stop_continuous_measurement()
