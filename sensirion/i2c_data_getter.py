@@ -10,13 +10,15 @@ def read_data_from_sensor(max_reads: int = -1, verbose: bool = False):
         device = Scc1ShdlcDevice(ShdlcConnection(port), slave_address=0)
         device.set_sensor_type(Scc1Slf3x.SENSOR_TYPE)
         sensor = Scc1Slf3x(device)
-        sleep(1)
+        sensor.stop_continuous_measurement()
+        sleep(5)
         print("serial_number:", sensor.serial_number)
         print("product id:", sensor.product_id)
         print("Flow;\tTemperature;\t Flag")
         flow_scale, unit = sensor.get_flow_unit_and_scale() # pyright: ignore[reportGeneralTypeIssues]
-        sleep(1)
+        sleep(5)
         sensor.start_continuous_measurement(interval_ms=2)
+        sleep(5)
         try:
             if max_reads == -1:
                 while True:
