@@ -6,11 +6,16 @@ from sensirion_uart_scc1.scc1_shdlc_device import Scc1ShdlcDevice
 from time import sleep
 
 def read_data_from_sensor(max_reads: int = -1, verbose: bool = False):
+    print("Called rdfs")
     with ShdlcSerialPort(port=input("Sensor port: "), baudrate=115200) as port:
+        print("Entered with block")
         device = Scc1ShdlcDevice(ShdlcConnection(port), slave_address=0)
+        print("Init device")
         device.set_sensor_type(Scc1Slf3x.SENSOR_TYPE)
+        print("Set sensor type")
         sensor = Scc1Slf3x(device)
-        sensor.stop_continuous_measurement()
+        print("Sensor init")
+        # sensor.stop_continuous_measurement()
         sleep(5)
         print("serial_number:", sensor.serial_number)
         print("product id:", sensor.product_id)

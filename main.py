@@ -11,5 +11,5 @@ plt.ylabel("Flow rate (mL/min)")
 # start live animation using the default random generator
 generator = sensirion.i2c_data_getter.read_data_from_sensor()
 sleep(5)
-graph.start_animation()
+graph.start_animation(generator)
 plt.show()
