@@ -9,7 +9,7 @@ class LiveGraph:
         """
         Create a live-updating graph with up to `maxlen` data points that updates every `interval` ms.
         """
-        self.x_values = deque([], maxlen)
+        self.time_values = deque([], maxlen)
         self.y_values = deque([], maxlen)
         self.fig, self.ax = plt.subplots()
         # create an empty Line2D so we can update its data later
@@ -49,13 +49,23 @@ class LiveGraph:
         return self.animation
     
     def update(self, y_value: int | float) -> Line2D:
-        start_time = time.time()
-        # TODO: make self.x_values relative to start_time, i.e. display past data points as -n*interval
-        self.x_values.append(start_time)
+        # record current time and store relative time (seconds since first update)
+        now = time.time()
+        if not hasattr(self, "start_time") or self.start_time is None:
+            self.start_time = now
+        rel_time = now - self.start_time
+
+        # append a single timestamp and value
+        self.time_values.append(rel_time)
         self.y_values.append(y_value)
+
+        # convert absolute times to relative times from the latest sample
+        max_time = max(self.time_values)
+        x_values = [t - max_time for t in self.time_values]
+
         # Next 8 lines are O(2n) for both self.x_values and self.y_values
-        minx = min(self.x_values)
-        maxx = max(self.x_values)
+        minx = min(x_values)
+        maxx = max(x_values)
         miny = min(self.y_values)
         maxy = max(self.y_values)
         if minx != maxx:
@@ -64,7 +74,7 @@ class LiveGraph:
             self.ax.set_ylim(miny, maxy)
 
         # update the plotted line and redraw
-        self.line.set_data(list(self.x_values), list(self.y_values))
+        self.line.set_data(x_values, list(self.y_values))
         try:
             self.fig.canvas.draw_idle()
         except Exception:
