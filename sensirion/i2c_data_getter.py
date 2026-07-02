@@ -17,7 +17,7 @@ with ShdlcSerialPort(port=args.serial_port, baudrate=115200) as port:
     print("serial_number:", sensor.serial_number)
     print("product id:", sensor.product_id)
     print("Flow;\tTemperature;\t Flag")
-    flow_scale, unit = sensor.get_flow_unit_and_scale()
+    flow_scale, unit = sensor.get_flow_unit_and_scale() # pyright: ignore[reportGeneralTypeIssues]
     sensor.start_continuous_measurement(interval_ms=2)
     try:
         for _ in range(1000):
