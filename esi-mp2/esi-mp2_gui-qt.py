@@ -1,6 +1,5 @@
 from PyQt6.QtWidgets import QMainWindow, QPushButton, QSlider, QTextEdit, QLabel, QApplication, QMessageBox, QHBoxLayout, QVBoxLayout, QWidget
 from PyQt6.QtCore import Qt, QSize
-from typing import Callable
 import time
 import serial
 from serial import SerialException

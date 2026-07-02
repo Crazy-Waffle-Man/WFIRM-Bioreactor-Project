@@ -1,26 +1,12 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QLineEdit, QVBoxLayout, QWidget
+import live_graph
+import sensirion.i2c_data_getter
 
-class MainWindow(QMainWindow):
-    def __init__(self):
-        super().__init__() # MUST call
-        self.setWindowTitle("App")
+import matplotlib.pyplot as plt
 
-        self.label = QLabel()
-        self.input = QLineEdit()
-        self.input.textChanged.connect(self.label.setText)
-        layout = QVBoxLayout()
-        layout.addWidget(self.input)
-        layout.addWidget(self.label)
-        container = QWidget()
-        container.setLayout(layout)
-
-        self.setCentralWidget(container)
-
-
-app: QApplication = QApplication([]) # Can replace [] with sys.argv
-
-
-window = MainWindow()
-window.show() # MUST call or else window will be hidden
-
-app.exec()
+graph = live_graph.LiveGraph(interval=100)
+plt.title("Flow rate vs time")
+plt.xlabel("Time (s)")
+plt.ylabel("Flow rate (mL/min)")
+# start live animation using the default random generator
+graph.start_animation(sensirion.i2c_data_getter.read_data_from_sensor())
+plt.show()
