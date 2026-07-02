@@ -11,7 +11,9 @@ def read_data_from_sensor(max_reads: int = -1, verbose: bool = False):
         print("Entered with block")
         device = Scc1ShdlcDevice(ShdlcConnection(port), slave_address=0)
         print("Init device")
-        device.set_sensor_type(Scc1Slf3x.SENSOR_TYPE)
+        sleep(5)
+        device.set_sensor_type(Scc1Slf3x.SENSOR_TYPE) # Error here
+        sleep(5)
         print("Set sensor type")
         sensor = Scc1Slf3x(device)
         print("Sensor init")
