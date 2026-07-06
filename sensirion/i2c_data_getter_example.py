@@ -7,7 +7,7 @@ from sensirion_uart_scc1.drivers.slf_common import get_flow_unit_label
 from sensirion_uart_scc1.scc1_shdlc_device import Scc1ShdlcDevice
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--serial-port', '-p', default='COM5')
+parser.add_argument('--serial-port', '-p')
 args = parser.parse_args()
 
 with ShdlcSerialPort(port=args.serial_port, baudrate=115200) as port:

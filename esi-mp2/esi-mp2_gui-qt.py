@@ -1,15 +1,16 @@
-from PyQt6.QtWidgets import QMainWindow, QPushButton, QSlider, QTextEdit, QLabel, QApplication, QMessageBox, QHBoxLayout, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QMainWindow, QPushButton, QSlider, QTextEdit, QLabel, QApplication, QMessageBox, QHBoxLayout, QVBoxLayout, QWidget, QComboBox
 from PyQt6.QtCore import Qt, QSize
 import time
 import serial
 from serial import SerialException
 
 class MainWindow(QMainWindow):
-    def __init__(self, serial_port: str = "COM17") -> None:
+    def __init__(self, profusion_motor_port: str, pressure_motor_port: str) -> None:
         super().__init__()
         self.setWindowTitle("ESI-MP2 control GUI")
-        self.serial = AutoSerial(serial_port)
-        self.motor = ESI_MP2(self.serial)
+        self.profusion_motor = ESI_MP2(AutoSerial(profusion_motor_port))
+        self.pressure_motor = ESI_MP2(AutoSerial(pressure_motor_port))
+        # GUI setup
         self.setup_widgets()
         self.show()
 
@@ -25,7 +26,7 @@ class MainWindow(QMainWindow):
         stop_movement_button: QPushButton = QPushButton(direction_controls)
         stop_movement_button.setText("Stop Movement")
         def stop():
-            message_box.information(None, "Result", self.motor.stop(), QMessageBox.StandardButton.Ok, QMessageBox.StandardButton.Ok)
+            message_box.information(None, "Result", self.profusion_motor.stop(), QMessageBox.StandardButton.Ok, QMessageBox.StandardButton.Ok)
         stop_movement_button.pressed.connect(stop)
 
         direction_button: QPushButton = QPushButton(direction_controls)
@@ -34,18 +35,18 @@ class MainWindow(QMainWindow):
         direction_button.toggled.connect(lambda: direction_button.setText(f"Currently turning {'clockwise' if direction_button.isChecked() else 'counterclockwise'}. Press to toggle."))
         def toggle_direction():
             if direction_button.isChecked():
-                self.motor.stop()
-                response = self.motor.turn_ccw()
+                self.profusion_motor.stop()
+                response = self.profusion_motor.turn_ccw()
             else:
-                self.motor.stop()
-                response = self.motor.turn_cw()
+                self.profusion_motor.stop()
+                response = self.profusion_motor.turn_cw()
             message_box.information(None, "Result", response, QMessageBox.StandardButton.Ok, QMessageBox.StandardButton.Ok)
         direction_button.toggled.connect(toggle_direction)
         
         status_button = QPushButton(direction_controls)
         status_button.setText("Get status")
         def get_status():
-            message_box.information(None, "Result", self.motor.get_status(), QMessageBox.StandardButton.Ok, QMessageBox.StandardButton.Ok)
+            message_box.information(None, "Result", self.profusion_motor.get_status(), QMessageBox.StandardButton.Ok, QMessageBox.StandardButton.Ok)
         status_button.pressed.connect(get_status)
 
         motor_speed_slider = QSlider(speed_controls)
@@ -75,35 +76,54 @@ class MainWindow(QMainWindow):
         motor_speed_auto_button.setCheckable(True)
         
         def update_speed():
-            self.motor.set_motor_speed(motor_speed_slider.value())
+            self.profusion_motor.set_motor_speed(motor_speed_slider.value())
         motor_speed_button.pressed.connect(update_speed)
         def auto_adjust_speed():
             if motor_speed_auto_button.isChecked(): update_speed()
         motor_speed_slider.valueChanged.connect(auto_adjust_speed)
 
+        # Pressure motor
+        p_header_label = QLabel()
+        p_header_label.setText("Pressure Motor Controls")
+
+        def p_movement_current_text_changed():
+            match p_movement_options.currentText():
+                case "CW":
+                    self.pressure_motor.turn_cw()
+                case "Stop":
+                    self.pressure_motor.stop()
+                case "CCW":
+                    self.pressure_motor.turn_ccw()
+        p_movement_options = QComboBox()
+        p_movement_options.addItems(['CW', 'Stop', 'CCW'])
+        p_movement_options.currentTextChanged.connect(p_movement_current_text_changed)
+
+        p_speed_label = QLabel()
+        p_speed_label.setText("Speed: 100")
+
+        def p_update_speed(delta: int):
+            p_speed_label.setText("Speed: " + str(int(p_speed_label.text().removeprefix("Speed: ")) + delta))
+            self.pressure_motor.set_motor_speed(int(p_speed_label.text().removeprefix("Speed: ")))
+
+        p_slow = QPushButton()
+        p_slow.setText("-")
+        p_slow.pressed.connect(lambda: p_update_speed(-5))
+
+        p_speed_up = QPushButton()
+        p_speed_up.setText("+")
+        p_speed_up.pressed.connect(lambda: p_update_speed(5))
+
+        p_tedit = QTextEdit()
+        def p_tedit_changed():
+            num = int("".join([char for char in p_tedit.toPlainText() if char.isdigit()]))
+            if 0 < num or num > 3200:
+                return
+            p_speed_label.setText("Speed: " + str(num))
+            self.pressure_motor.set_motor_speed(int(p_speed_label.text().removeprefix("Speed: ")))
+        p_tedit.textChanged.connect(p_tedit_changed)
+
         #Layout
-        layout = QHBoxLayout()
-        layout.addWidget(motor_speed_button)
-        layout.addWidget(motor_speed_auto_button)
-        speed_buttons.setLayout(layout)
-
-        layout = QVBoxLayout()
-        layout.addWidget(speed_buttons)
-        layout.addWidget(mss_label, alignment=Qt.AlignmentFlag.AlignHCenter)
-        layout.addWidget(motor_speed_slider)
-        layout.addWidget(mss_textedit, alignment=Qt.AlignmentFlag.AlignHCenter)
-        speed_controls.setLayout(layout)
-
-        layout = QHBoxLayout()
-        layout.addWidget(direction_button)
-        layout.addWidget(stop_movement_button)
-        layout.addWidget(status_button)
-        direction_controls.setLayout(layout)
-
-        layout = QVBoxLayout()
-        layout.addWidget(direction_controls)
-        layout.addWidget(speed_controls)
-        main_widget.setLayout(layout)
+        
         self.setCentralWidget(main_widget)      
 
 class AutoSerial(serial.Serial):
@@ -148,7 +168,8 @@ class ESI_MP2:
 
 app = QApplication([])
 
-port = input("Port: ")
-window = MainWindow(port)
+profusion_motor_port = input("Profusion motor port: ")
+pressure_motor_port = input("Pressure motor port: ")
+window = MainWindow(profusion_motor_port, pressure_motor_port)
 
 app.exec()
