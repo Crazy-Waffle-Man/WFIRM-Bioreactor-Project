@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QMainWindow, QPushButton, QSlider, QTextEdit, QLabel, QApplication, QMessageBox, QHBoxLayout, QVBoxLayout, QWidget, QComboBox
+from PyQt6.QtWidgets import QMainWindow, QPushButton, QSlider, QTextEdit, QLabel, QApplication, QMessageBox, QHBoxLayout, QVBoxLayout, QWidget, QComboBox, QLayout
 from PyQt6.QtCore import Qt, QSize
 import time
 import serial
@@ -17,11 +17,20 @@ class MainWindow(QMainWindow):
     def setup_widgets(self):
         main_widget = QWidget(self)
         main_widget.setMaximumSize(QSize(500, 300))
+
         direction_controls = QWidget(main_widget)
         speed_controls = QWidget(main_widget)
         speed_buttons = QWidget(speed_controls)
+        speed_buttons.setObjectName("speed_buttons")
+        speed_buttons.setContentsMargins(0, 0, 0, 0)
+
+        p_control_box = QWidget(main_widget)
+        p_speed_box = QWidget(p_control_box)
 
         message_box = QMessageBox()
+
+        profusion_label = QLabel(main_widget)
+        profusion_label.setText("Profusion Motor")
 
         stop_movement_button: QPushButton = QPushButton(direction_controls)
         stop_movement_button.setText("Stop Movement")
@@ -31,8 +40,8 @@ class MainWindow(QMainWindow):
 
         direction_button: QPushButton = QPushButton(direction_controls)
         direction_button.setCheckable(True)
-        direction_button.setText(f"Currently turning {'clockwise' if direction_button.isChecked() else 'counterclockwise'}. Press to toggle.")
-        direction_button.toggled.connect(lambda: direction_button.setText(f"Currently turning {'clockwise' if direction_button.isChecked() else 'counterclockwise'}. Press to toggle."))
+        direction_button.setText(f"{'CW' if direction_button.isChecked() else 'CCW'}")
+        direction_button.toggled.connect(lambda: direction_button.setText(f"{'CW' if direction_button.isChecked() else 'CCW'}"))
         def toggle_direction():
             if direction_button.isChecked():
                 self.profusion_motor.stop()
@@ -67,7 +76,7 @@ class MainWindow(QMainWindow):
                         return
                     motor_speed_slider.setValue(int(result))
         mss_textedit.textChanged.connect(lambda: apply_mss_textedit(mss_textedit.toPlainText()))
-        mss_textedit.setMaximumSize(QSize(100, 30))
+        mss_textedit.setFixedSize(QSize(100, 50))
         
         motor_speed_button = QPushButton(speed_buttons)
         motor_speed_button.setText("Set motor speed")
@@ -95,7 +104,8 @@ class MainWindow(QMainWindow):
                 case "CCW":
                     self.pressure_motor.turn_ccw()
         p_movement_options = QComboBox()
-        p_movement_options.addItems(['CW', 'Stop', 'CCW'])
+        p_movement_options.addItems(['CW', 'Off', 'CCW'])
+        p_movement_options.setCurrentIndex(1)
         p_movement_options.currentTextChanged.connect(p_movement_current_text_changed)
 
         p_speed_label = QLabel()
@@ -123,7 +133,52 @@ class MainWindow(QMainWindow):
         p_tedit.textChanged.connect(p_tedit_changed)
 
         #Layout
+        def layout_children(layout: QLayout, container: QWidget):
+            for child in container.children():
+                if child is QWidget:
+                    layout.addWidget(child)
+            container.setLayout(layout)
         
+        layout = QVBoxLayout(p_speed_box)
+        layout.addWidget(p_speed_label, alignment = Qt.AlignmentFlag.AlignHCenter)
+        layout.addWidget(p_tedit, alignment = Qt.AlignmentFlag.AlignHCenter)
+        p_speed_box.setLayout(layout)
+
+        layout = QHBoxLayout(p_control_box)
+        layout.addWidget(p_movement_options)
+        layout.addWidget(p_slow)
+        layout.addWidget(p_speed_box, alignment=Qt.AlignmentFlag.AlignVCenter)
+        layout.addWidget(p_speed_up)
+        p_control_box.setLayout(layout)
+
+        layout = QHBoxLayout(speed_buttons)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(motor_speed_button)
+        layout.addWidget(motor_speed_auto_button)
+        speed_buttons.setLayout(layout)
+
+        layout = QVBoxLayout(speed_controls)
+        layout.addWidget(speed_buttons)
+        layout.addWidget(mss_label, alignment=Qt.AlignmentFlag.AlignHCenter)
+        layout.addWidget(motor_speed_slider)
+        layout.addWidget(mss_textedit, alignment=Qt.AlignmentFlag.AlignHCenter)
+        speed_controls.setLayout(layout)
+
+        layout = QHBoxLayout(direction_controls)
+        layout.addWidget(direction_button)
+        layout.addWidget(stop_movement_button)
+        layout.addWidget(status_button)
+        direction_controls.setLayout(layout)
+
+        layout = QVBoxLayout(main_widget)
+        layout.addWidget(profusion_label, alignment=Qt.AlignmentFlag.AlignHCenter)
+        layout.addWidget(direction_controls)
+        layout.addWidget(speed_controls)
+        layout.addWidget(p_header_label, alignment=Qt.AlignmentFlag.AlignHCenter)
+        layout.addWidget(p_control_box)
+        main_widget.setLayout(layout)
+
+
         self.setCentralWidget(main_widget)      
 
 class AutoSerial(serial.Serial):
