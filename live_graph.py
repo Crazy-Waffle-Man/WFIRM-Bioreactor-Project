@@ -87,5 +87,5 @@ if __name__ == "__main__":
     plt.xlabel("Time")
     plt.ylabel("Random values")
     # start live animation using the default random generator
-    graph.start_animation(...)
+    graph.start_animation()
     plt.show()

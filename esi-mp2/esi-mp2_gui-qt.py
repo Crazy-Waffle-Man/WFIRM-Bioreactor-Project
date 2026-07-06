@@ -104,8 +104,7 @@ class MainWindow(QMainWindow):
         layout.addWidget(direction_controls)
         layout.addWidget(speed_controls)
         main_widget.setLayout(layout)
-        self.setCentralWidget(main_widget)
-        
+        self.setCentralWidget(main_widget)      
 
 class AutoSerial(serial.Serial):
     def __init__(self, port, baudrate = 9600, connect_timeout = 1, response_timeout = 0.1):
@@ -151,6 +150,5 @@ app = QApplication([])
 
 port = input("Port: ")
 window = MainWindow(port)
-window.show()
 
 app.exec()
