@@ -15,6 +15,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("ESI-MP2 control GUI")
         self.perfusion_motor = ESI_MP2(AutoSerial(perfusion_motor_port))
+        self.perfusion_motor.set_motor_speed(100)
         self.pressure_motor = ESI_MP2(AutoSerial(pressure_motor_port))
         # GUI setup
         self.setup_widgets()
