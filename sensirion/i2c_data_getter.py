@@ -7,6 +7,7 @@ from sensirion_uart_scc1.scc1_shdlc_device import Scc1ShdlcDevice
 def read_data_from_flow_sensor(port_name: str):
     with ShdlcSerialPort(port=port_name, baudrate=115200) as port:
         device = Scc1ShdlcDevice(ShdlcConnection(port), slave_address=0)
+        time.sleep(0.2)
         device.set_sensor_type(Scc1Slf3x.SENSOR_TYPE) # If error, it do be here
         sensor = Scc1Slf3x(device)
         print("serial_number:", sensor.serial_number)
