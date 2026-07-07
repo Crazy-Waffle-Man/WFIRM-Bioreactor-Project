@@ -29,6 +29,7 @@ void setup() {
   scale.begin(DOUT, CLK);
   scale.set_gain(GAIN);
   scale.set_scale(calibration_factor);
+  //Tare?
   last_time = millis();
 }
 
@@ -36,15 +37,12 @@ void loop() {
   unsigned long current_time = millis();
   double delta_time = (current_time - last_time) / 1000.0; // in seconds
 
-  float raw_reading = scale.get_units(5); // 5 readings
-  float voltage = (raw_reading / 1024.0) * EXCITATION_VOLTAGE;
-  float pressure_psi = voltage / PRESSURE_FACTOR;
-  float pressure_MPa = pressure_psi * PSI_TO_MPA;// well there goes my consistent style
+  float pressure_mbar = scale.get_units(5); // 5 readings
 
   float pid_output[3];
-  pid_compute(delta_time, pressure_MPa, *pid_output)
+  pid_compute(delta_time, pressure_mbar, *pid_output)
 
-  Serial.println("{'pressure': " + String(pressure_MPa) + ", 'pid_output': " + String(pid_output[0]) + "}"); // receive in raspberry pi. send output value to ESI-MP2. Graph pressure so that we know how to calibrate kp, ki, and kd
+  Serial.println("{'pressure': " + String(pressure_mbar) + ", 'pid_output': " + String(pid_output[0]) + ", 'delta_time': " + delta_time"}"); // receive in raspberry pi. send output value to ESI-MP2. Graph pressure so that we know how to calibrate kp, ki, and kd
 }
 
 void pid_compute(int dt, float value, float output_to) { // best practice would probably be to make setpoint, kp, ki, kd, integral, and last_error parameters here, but I think I'll only need this once.
