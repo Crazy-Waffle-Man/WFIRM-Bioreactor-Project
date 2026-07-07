@@ -11,10 +11,10 @@ from live_graph import LiveGraph
 from serial import SerialException
 
 class MainWindow(QMainWindow):
-    def __init__(self, profusion_motor_port: str, pressure_motor_port: str) -> None:
+    def __init__(self, perfusion_motor_port: str, pressure_motor_port: str) -> None:
         super().__init__()
         self.setWindowTitle("ESI-MP2 control GUI")
-        self.profusion_motor = ESI_MP2(AutoSerial(profusion_motor_port))
+        self.perfusion_motor = ESI_MP2(AutoSerial(perfusion_motor_port))
         self.pressure_motor = ESI_MP2(AutoSerial(pressure_motor_port))
         # GUI setup
         self.setup_widgets()
@@ -38,13 +38,13 @@ class MainWindow(QMainWindow):
 
         message_box = QMessageBox()
 
-        profusion_label = QLabel(controls_widget)
-        profusion_label.setText("Profusion Motor")
+        perfusion_label = QLabel(controls_widget)
+        perfusion_label.setText("perfusion Motor")
 
         stop_movement_button: QPushButton = QPushButton(direction_controls)
         stop_movement_button.setText("Stop Movement")
         def stop():
-            message_box.information(None, "Result", self.profusion_motor.stop(), QMessageBox.StandardButton.Ok, QMessageBox.StandardButton.Ok)
+            message_box.information(None, "Result", self.perfusion_motor.stop(), QMessageBox.StandardButton.Ok, QMessageBox.StandardButton.Ok)
         stop_movement_button.pressed.connect(stop)
 
         direction_button: QPushButton = QPushButton(direction_controls)
@@ -53,18 +53,18 @@ class MainWindow(QMainWindow):
         direction_button.toggled.connect(lambda: direction_button.setText(f"{'CW' if direction_button.isChecked() else 'CCW'}"))
         def toggle_direction():
             if direction_button.isChecked():
-                self.profusion_motor.stop()
-                response = self.profusion_motor.turn_ccw()
+                self.perfusion_motor.stop()
+                response = self.perfusion_motor.turn_ccw()
             else:
-                self.profusion_motor.stop()
-                response = self.profusion_motor.turn_cw()
+                self.perfusion_motor.stop()
+                response = self.perfusion_motor.turn_cw()
             message_box.information(None, "Result", response, QMessageBox.StandardButton.Ok, QMessageBox.StandardButton.Ok)
         direction_button.toggled.connect(toggle_direction)
         
         status_button = QPushButton(direction_controls)
         status_button.setText("Get status")
         def get_status():
-            message_box.information(None, "Result", self.profusion_motor.get_status(), QMessageBox.StandardButton.Ok, QMessageBox.StandardButton.Ok)
+            message_box.information(None, "Result", self.perfusion_motor.get_status(), QMessageBox.StandardButton.Ok, QMessageBox.StandardButton.Ok)
         status_button.pressed.connect(get_status)
 
         motor_speed_slider = QSlider(speed_controls)
@@ -94,7 +94,7 @@ class MainWindow(QMainWindow):
         motor_speed_auto_button.setCheckable(True)
         
         def update_speed():
-            self.profusion_motor.set_motor_speed(motor_speed_slider.value())
+            self.perfusion_motor.set_motor_speed(motor_speed_slider.value())
         motor_speed_button.pressed.connect(update_speed)
         def auto_adjust_speed():
             if motor_speed_auto_button.isChecked(): update_speed()
@@ -185,7 +185,7 @@ class MainWindow(QMainWindow):
         direction_controls.setLayout(layout)
 
         layout = QVBoxLayout(controls_widget)
-        layout.addWidget(profusion_label, alignment=Qt.AlignmentFlag.AlignHCenter)
+        layout.addWidget(perfusion_label, alignment=Qt.AlignmentFlag.AlignHCenter)
         layout.addWidget(direction_controls)
         layout.addWidget(speed_controls)
         layout.addWidget(p_header_label, alignment=Qt.AlignmentFlag.AlignHCenter)
@@ -247,8 +247,8 @@ class ESI_MP2:
 
 app = QApplication([])
 
-profusion_motor_port = input("Profusion motor port: ")
+perfusion_motor_port = input("perfusion motor port: ")
 pressure_motor_port = input("Pressure motor port: ")
-window = MainWindow(profusion_motor_port, pressure_motor_port)
+window = MainWindow(perfusion_motor_port, pressure_motor_port)
 
 app.exec()
