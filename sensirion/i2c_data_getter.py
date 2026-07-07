@@ -1,5 +1,5 @@
 from sensirion_shdlc_driver import ShdlcSerialPort, ShdlcConnection
-
+import time
 from sensirion_uart_scc1.drivers.scc1_slf3x import Scc1Slf3x
 from sensirion_uart_scc1.drivers.slf_common import get_flow_unit_label
 from sensirion_uart_scc1.scc1_shdlc_device import Scc1ShdlcDevice
@@ -24,3 +24,11 @@ def read_data_from_flow_sensor(port_name: str):
                     yield (flow / flow_scale, temperature / 200, flag)
         finally:
             sensor.stop_continuous_measurement()
+
+
+if __name__ == "__main__":
+    data = read_data_from_flow_sensor(input("Flow sensor port: "))
+
+    time.sleep(100)
+    for value in data:
+        print(value)
