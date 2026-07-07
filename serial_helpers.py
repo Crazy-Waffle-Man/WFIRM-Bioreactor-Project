@@ -11,14 +11,16 @@ class AutoSerial(serial.Serial):
         except SerialException as e:
             print(f"Failed to connect to port {port}: {e}")
     
+    def get_response(self) -> str | None:
+        return self.read_until(b"\n").decode("ascii").strip()
+
     def send_command(self, command: str) -> str | None:
         if not command.endswith("\r") or not command.endswith("\n"):
             command += "\r"
         try:
             self.write(command.encode("ascii"))
             time.sleep(self.response_timeout)
-            response = self.read(self.in_waiting).decode("ascii").strip()
-            return response
+            return self.get_response()
         except Exception as e:
             return f"Encountered an error when sending command {command.strip()}: {e}"
 

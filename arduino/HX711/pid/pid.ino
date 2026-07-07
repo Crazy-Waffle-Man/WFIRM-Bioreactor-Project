@@ -1,10 +1,11 @@
 #include "HX711.h"
+#include <MedianFilterLib.h>
 
-#define calibration_factor 1  // obtained from calibration sketch
+#define calibration_factor 8076  // obtained from calibration sketch
 
 // HX711 Load Cell Configuration
-#define DOUT 3
-#define CLK 2
+#define DOUT A1
+#define CLK A0
 #define GAIN 128
 #define PRESSURE_FACTOR 0.0002584  // V/psi, might need to be recalibrated.
 #define EXCITATION_VOLTAGE 5
@@ -12,24 +13,12 @@
 
 HX711 scale;
 
-// PID settings
-float setpoint = 1.0; // target pressure in MPa
-// to calibrate: ki = kd = 0, then increase kp until it begins oscillating
-// slowly increase kd to smooth oscillations
-// increase ki to remove consistent error between value and setpoint
-float kp = 1.0; // needs calibration
-float ki = 1.0; // needs calibration
-float kd = 1.0; // needs calibration
-unsigned long last_time = 0;
-float integral = 0;
-float last_error = 0;
-
+float last_time = 0;
 void setup() {
   Serial.begin(9600);
   scale.begin(DOUT, CLK);
-  scale.set_gain(GAIN);
   scale.set_scale(calibration_factor);
-  //Tare?
+  scale.tare();
   last_time = millis();
 }
 
@@ -37,24 +26,9 @@ void loop() {
   unsigned long current_time = millis();
   double delta_time = (current_time - last_time) / 1000.0; // in seconds
 
-  float pressure_mbar = scale.get_units(5); // 5 readings
-
-  float pid_output[3];
-  pid_compute(delta_time, pressure_mbar, *pid_output)
-
-  Serial.println("{'pressure': " + String(pressure_mbar) + ", 'pid_output': " + String(pid_output[0]) + ", 'delta_time': " + delta_time"}"); // receive in raspberry pi. send output value to ESI-MP2. Graph pressure so that we know how to calibrate kp, ki, and kd
-}
-
-void pid_compute(int dt, float value, float output_to) { // best practice would probably be to make setpoint, kp, ki, kd, integral, and last_error parameters here, but I think I'll only need this once.
-  float error = setpoint - value;
-  float p_out = kp * error;
-  integral += error * dt;
-  float i_out = ki * integral;
-  float derivative = (error - last_error) / dt;
-  float d_out = kd * derivative;
-  float output = p_out + i_out + d_out;
-  last_error = error; // we need this later
-  output_to[0] = output;
-  output_to[1] = last_error;
-  output_to[2] = integral;
+  float pressure_mbar = scale.get_units(10);
+  // scale.power_down();
+  // delay(1000);
+  // scale.power_up();
+  Serial.println("{\"pressure\": " + String(pressure_mbar) + ", \"delta_time\": " + delta_time + "}"); // receive in raspberry pi. send output value to ESI-MP2. Graph pressure so that we know how to calibrate kp, ki, and kd
 }
