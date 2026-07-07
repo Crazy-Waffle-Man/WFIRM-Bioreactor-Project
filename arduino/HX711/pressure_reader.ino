@@ -26,7 +26,7 @@ void loop() {
   unsigned long current_time = millis();
   double delta_time = (current_time - last_time) / 1000.0; // in seconds
 
-  float pressure_mbar = scale.get_units(10);
+  float pressure_mbar = scale.get_units();
   // scale.power_down();
   // delay(1000);
   // scale.power_up();

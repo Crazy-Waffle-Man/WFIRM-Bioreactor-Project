@@ -12,16 +12,21 @@ def get_data_from_arduino(serial: AutoSerial, key: str) -> Generator[dict[str, A
     Gets data from arduino running ./pid/pid.ino
     """
     while True:
-        response: str | None = serial.get_response()
+        response: str | None = serial.get_latest_response()
         if response:
-            print(json.loads(response))
-            print(json.loads(response)[key])
-            yield json.loads(response)[key]
+            response_dict = {}
+            try:
+                response_dict = json.loads(response)
+
+            except json.JSONDecodeError as e:
+                print(e)
+            if response_dict[key]:
+                yield response_dict[key]
 
 if __name__ == "__main__":
     import live_graph
     import matplotlib.pyplot as plt
-    graph = live_graph.LiveGraph()
+    graph = live_graph.LiveGraph(interval=100)
     plt.title("Test graph")
     plt.xlabel("Time")
     plt.ylabel("Pressure (mbar)")

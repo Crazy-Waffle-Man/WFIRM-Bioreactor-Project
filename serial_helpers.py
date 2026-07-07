@@ -6,13 +6,25 @@ class AutoSerial(serial.Serial):
     def __init__(self, port, baudrate = 9600, connect_timeout = 1, response_timeout = 0.1):
         self.response_timeout = response_timeout
         try:
-            super().__init__(port = port, baudrate = baudrate, timeout = connect_timeout)
+            super().__init__(port = port, baudrate = baudrate, timeout = self.response_timeout)
             print(f"Connected to {port}")
         except SerialException as e:
             print(f"Failed to connect to port {port}: {e}")
     
     def get_response(self) -> str | None:
         return self.read_until(b"\n").decode("ascii").strip()
+
+    def get_latest_response(self) -> str | None:
+        """Return the most recent complete line from the serial buffer."""
+        last_line = None
+        while True:
+            line = self.read_until(b"\n")
+            if not line:
+                break
+            last_line = line.decode("ascii").strip()
+            if self.in_waiting == 0:
+                break
+        return last_line
 
     def send_command(self, command: str) -> str | None:
         if not command.endswith("\r") or not command.endswith("\n"):
