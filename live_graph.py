@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.lines import Line2D
+from matplotlib.figure import Figure
 import time
 from collections import deque
 
@@ -18,6 +20,14 @@ class LiveGraph:
         self.animation = None
         # default interval for animation (ms)
         self.interval = interval
+        self.widget = None
+    
+    def get_widget(self, parent=None):
+        if self.widget is None:
+            self.widget = FigureCanvas(self.fig)
+            if parent is not None:
+                self.widget.setParent(parent)
+        return self.widget
 
     def start_animation(self, frames=None, interval: int | None = None):
         """Start a live `FuncAnimation` that calls `update()` for each frame.

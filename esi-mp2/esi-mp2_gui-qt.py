@@ -1,7 +1,13 @@
+from pathlib import Path
+import sys
+ROOT = Path(__file__).resolve().parent.parent # Parent of parent of this file, should be ../
+sys.path.insert(0, str(ROOT)) # Add files from root to path so that we can import from them
+
 from PyQt6.QtWidgets import QMainWindow, QPushButton, QSlider, QTextEdit, QLabel, QApplication, QMessageBox, QHBoxLayout, QVBoxLayout, QWidget, QComboBox, QLayout
 from PyQt6.QtCore import Qt, QSize
 import time
 import serial
+from live_graph import LiveGraph
 from serial import SerialException
 
 class MainWindow(QMainWindow):
@@ -16,20 +22,23 @@ class MainWindow(QMainWindow):
 
     def setup_widgets(self):
         main_widget = QWidget(self)
-        main_widget.setMaximumSize(QSize(500, 300))
 
-        direction_controls = QWidget(main_widget)
-        speed_controls = QWidget(main_widget)
+        graphs_widget = QWidget(main_widget)
+        controls_widget = QWidget(main_widget)
+        controls_widget.setMaximumSize(QSize(500, 300))
+
+        direction_controls = QWidget(controls_widget)
+        speed_controls = QWidget(controls_widget)
         speed_buttons = QWidget(speed_controls)
         speed_buttons.setObjectName("speed_buttons")
         speed_buttons.setContentsMargins(0, 0, 0, 0)
 
-        p_control_box = QWidget(main_widget)
+        p_control_box = QWidget(controls_widget)
         p_speed_box = QWidget(p_control_box)
 
         message_box = QMessageBox()
 
-        profusion_label = QLabel(main_widget)
+        profusion_label = QLabel(controls_widget)
         profusion_label.setText("Profusion Motor")
 
         stop_movement_button: QPushButton = QPushButton(direction_controls)
@@ -132,8 +141,13 @@ class MainWindow(QMainWindow):
             self.pressure_motor.set_motor_speed(int(p_speed_label.text().removeprefix("Speed: ")))
         p_tedit.textChanged.connect(p_tedit_changed)
 
+        # Graphs
+        self.live_graph = LiveGraph(50)
+        random_graph = self.live_graph.get_widget(graphs_widget)
+        self.live_graph.start_animation(interval=100)
+
         #Layout
-        def layout_children(layout: QLayout, container: QWidget):
+        def layout_children(layout: QLayout, container: QWidget): # doesn't work :(
             for child in container.children():
                 if child is QWidget:
                     layout.addWidget(child)
@@ -170,12 +184,22 @@ class MainWindow(QMainWindow):
         layout.addWidget(status_button)
         direction_controls.setLayout(layout)
 
-        layout = QVBoxLayout(main_widget)
+        layout = QVBoxLayout(controls_widget)
         layout.addWidget(profusion_label, alignment=Qt.AlignmentFlag.AlignHCenter)
         layout.addWidget(direction_controls)
         layout.addWidget(speed_controls)
         layout.addWidget(p_header_label, alignment=Qt.AlignmentFlag.AlignHCenter)
         layout.addWidget(p_control_box)
+        controls_widget.setLayout(layout)
+
+        layout = QVBoxLayout(graphs_widget)
+        layout.addWidget(random_graph)
+        ... # Add more/other graphs later
+        graphs_widget.setLayout(layout)
+
+        layout = QHBoxLayout(main_widget)
+        layout.addWidget(controls_widget)
+        layout.addWidget(graphs_widget)
         main_widget.setLayout(layout)
 
 
