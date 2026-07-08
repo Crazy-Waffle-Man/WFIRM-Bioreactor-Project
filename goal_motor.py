@@ -23,6 +23,7 @@ class ActionTypes:
         def __init__(self, *args) -> None:
             self.actions = args
         def exec(self):
+            print("Executing multiple actions...")
             for action in self.actions:
                 if isinstance(action, Action):
                     action.exec()
@@ -33,6 +34,7 @@ class ActionTypes:
             self.repeats = repeats
             self.action = action
         def exec(self):
+            print(f"Executing repeat action...")
             for i in range(self.repeats):
                 self.action.exec()
     class Delay(Action):
@@ -51,6 +53,7 @@ class ActionTypes:
             self.getter = current_value_getter
             self.args = args
         def exec(self):
+            print("Executing CallUntilTarget")
             while not (self.getter() >= self.lower and self.getter() <= self.upper):
                 self.func(*self.args)
     class Call(Action):
