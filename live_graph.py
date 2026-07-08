@@ -27,7 +27,28 @@ class LiveGraph:
         return self.y_values[-1] if self.y_values else None
     def get_latest_value(self):
         return self.latest_value
-    def get_widget(self, parent=None):
+    def set_title(self, title: str) -> None:
+        self.ax.set_title(title)
+
+    def set_xlabel(self, label: str) -> None:
+        self.ax.set_xlabel(label)
+
+    def set_ylabel(self, label: str) -> None:
+        self.ax.set_ylabel(label)
+
+    def get_widget(self, parent=None, title: str | None = None, xlabel: str | None = None, ylabel: str | None = None):
+        """Return the FigureCanvas widget. Optionally set title and axis labels on the figure.
+
+        When embedding the canvas in a GUI, prefer passing `title`, `xlabel` and `ylabel`
+        here so the labels are applied to this figure's Axes instead of the global `plt`.
+        """
+        if title is not None:
+            self.set_title(title)
+        if xlabel is not None:
+            self.set_xlabel(xlabel)
+        if ylabel is not None:
+            self.set_ylabel(ylabel)
+
         if self.widget is None:
             self.widget = FigureCanvas(self.fig)
             if parent is not None:

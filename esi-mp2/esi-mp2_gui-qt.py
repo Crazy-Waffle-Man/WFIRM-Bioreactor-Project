@@ -21,7 +21,7 @@ class MainWindow(QMainWindow):
         # GUI setup
         self.setup_widgets()
 
-        self.setup_pressure_motor()
+        # self.setup_pressure_motor()
         self.pressure_motor.go()
         self.show()
 
@@ -75,7 +75,7 @@ class MainWindow(QMainWindow):
         message_box = QMessageBox()
 
         perfusion_label = QLabel(controls_widget)
-        perfusion_label.setText("perfusion Motor")
+        perfusion_label.setText("Perfusion Motor")
 
         stop_movement_button: QPushButton = QPushButton(direction_controls)
         stop_movement_button.setText("Stop Movement")
@@ -179,7 +179,12 @@ class MainWindow(QMainWindow):
 
         # Graphs
         self.live_graph = LiveGraph(50)
-        pressure_graph = self.live_graph.get_widget(graphs_widget)
+        pressure_graph = self.live_graph.get_widget(
+            graphs_widget,
+            title="Pressure",
+            xlabel="Time",
+            ylabel="Pressure (mbar)",
+        )
         self.live_graph.start_animation(get_data_from_arduino(self.arduino_serial, "pressure"), interval=100)
 
         #Layout
