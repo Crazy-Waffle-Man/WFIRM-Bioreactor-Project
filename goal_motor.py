@@ -13,6 +13,7 @@ class GoalMotor(serial_helpers.ESI_MP2):
             self.actions.exec()
     def go(self):
         thread = Thread(target=self._update, daemon=True) # Don't block main thread from exiting
+        thread.start()
 
 class Action: # abstract
     def exec(self) -> None:
