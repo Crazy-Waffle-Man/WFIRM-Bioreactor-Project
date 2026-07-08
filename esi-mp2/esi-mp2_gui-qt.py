@@ -39,12 +39,12 @@ class MainWindow(QMainWindow):
                 value = value()
             assert isinstance(value, float | int)
             motor.set_motor_speed(600)
-            if value <= target - tolerance and direction_is_cw:
-                motor.turn_ccw() # OR cw
-                direction_is_cw = False
-            elif value >= target + tolerance and not direction_is_cw:
+            if value < target - tolerance and direction_is_cw:
+                motor.turn_cw() # OR cw
                 direction_is_cw = True
-                motor.turn_cw() # OR ccw, just the opposite of line 31
+            elif value > target + tolerance and direction_is_cw:
+                direction_is_cw = False
+                motor.turn_ccw() # OR ccw, just the opposite of line 31
         goals = (
             ActionList([])
             .append_action(ActionTypes.Delay(1000))
