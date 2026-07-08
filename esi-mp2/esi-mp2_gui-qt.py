@@ -38,7 +38,7 @@ class MainWindow(QMainWindow):
             if isinstance(value, Callable):
                 value = value()
             assert isinstance(value, float | int)
-            motor.set_motor_speed(3200)
+            # motor.set_motor_speed(3200)
             if value <= target - tolerance and direction_is_cw:
                 motor.turn_ccw() # OR cw
                 direction_is_cw = False
