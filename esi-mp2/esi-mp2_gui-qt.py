@@ -7,18 +7,55 @@ from PyQt6.QtWidgets import QMainWindow, QPushButton, QSlider, QTextEdit, QLabel
 from PyQt6.QtCore import Qt, QSize
 from live_graph import LiveGraph
 from serial_helpers import ESI_MP2, AutoSerial
+from arduino.HX711.bridge import get_data_from_arduino
+from goal_motor import *
 
 class MainWindow(QMainWindow):
-    def __init__(self, perfusion_motor_port: str, pressure_motor_port: str) -> None:
+    def __init__(self, perfusion_motor_port: str, pressure_motor_port: str, arduino_port: str) -> None:
         super().__init__()
         self.setWindowTitle("ESI-MP2 control GUI")
+        self.arduino_serial = AutoSerial(arduino_port)
         self.perfusion_motor = ESI_MP2(AutoSerial(perfusion_motor_port))
         self.perfusion_motor.set_motor_speed(100)
-        self.pressure_motor = ESI_MP2(AutoSerial(pressure_motor_port))
+        self.pressure_motor = GoalMotor(AutoSerial(pressure_motor_port))
         # GUI setup
         self.setup_widgets()
+
+        self.setup_pressure_motor()
+        self.pressure_motor.go()
         self.show()
 
+    def setup_pressure_motor(self):
+        def adaptive_motor_speed(target: int | float, motor: ESI_MP2, value: int | float | Callable, tolerance: int | float):
+            if isinstance(value, Callable):
+                value = value()
+            assert isinstance(value, float | int)
+            if value <= target - tolerance:
+                motor.set_motor_speed(...)
+                motor.turn_ccw() # OR cw
+            elif value >= target + tolerance:
+                motor.set_motor_speed(...)
+                motor.turn_cw() # OR ccw, just the opposite of line 31
+        goals = (
+            ActionList([])
+            .append_action(ActionTypes.Delay(1000))
+            .append_action( # Pressure 1
+                ActionTypes.Repeat(ActionTypes.Actions(
+                    ActionTypes.CallUntilTarget(..., adaptive_motor_speed, self.live_graph.get_latest_value, ..., self.pressure_motor, ..., self.live_graph.get_latest_value),
+                    ActionTypes.Call(self.pressure_motor.stop),
+                    ActionTypes.Delay(10000)
+                ), 100)
+            )
+            .append_action( # Pressure 2
+                ActionTypes.Repeat(ActionTypes.Actions(
+                    ActionTypes.CallUntilTarget(..., adaptive_motor_speed, self.live_graph.get_latest_value, ..., self.pressure_motor, ..., self.live_graph.get_latest_value),
+                    ActionTypes.Call(self.pressure_motor.stop),
+                    ActionTypes.Delay(10000)
+                ), 100)
+            ) # etc
+        )
+        self.pressure_motor.actions = goals
+    
     def setup_widgets(self):
         main_widget = QWidget(self)
 
@@ -142,8 +179,8 @@ class MainWindow(QMainWindow):
 
         # Graphs
         self.live_graph = LiveGraph(50)
-        random_graph = self.live_graph.get_widget(graphs_widget)
-        self.live_graph.start_animation(interval=100)
+        pressure_graph = self.live_graph.get_widget(graphs_widget)
+        self.live_graph.start_animation(get_data_from_arduino(self.arduino_serial, "pressure"), interval=100)
 
         #Layout
         def layout_children(layout: QLayout, container: QWidget): # doesn't work :(
@@ -192,7 +229,7 @@ class MainWindow(QMainWindow):
         controls_widget.setLayout(layout)
 
         layout = QVBoxLayout(graphs_widget)
-        layout.addWidget(random_graph)
+        layout.addWidget(pressure_graph)
         ... # Add more/other graphs later
         graphs_widget.setLayout(layout)
 
@@ -206,8 +243,9 @@ class MainWindow(QMainWindow):
 
 app = QApplication([])
 
-perfusion_motor_port = input("perfusion motor port: ")
+perfusion_motor_port = input("Perfusion motor port: ")
 pressure_motor_port = input("Pressure motor port: ")
-window = MainWindow(perfusion_motor_port, pressure_motor_port)
+arduino_port = input("Arduino port: ")
+window = MainWindow(perfusion_motor_port, pressure_motor_port, arduino_port)
 
 app.exec()
