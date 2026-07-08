@@ -16,6 +16,7 @@ parser.add_argument("--pressure_motor_port", "-p")
 parser.add_argument("--arduino_port", "-a")
 args = parser.parse_args()
 
+direction_is_cw: bool = False
 class MainWindow(QMainWindow):
     def __init__(self, perfusion_motor_port: str, pressure_motor_port: str, arduino_port: str) -> None:
         super().__init__()
@@ -33,14 +34,17 @@ class MainWindow(QMainWindow):
 
     def setup_pressure_motor(self):
         def adaptive_motor_speed(target: int | float, motor: ESI_MP2, value: int | float | Callable, tolerance: int | float):
+            global direction_is_cw
+            print("Adaptive motor speed")
             if isinstance(value, Callable):
                 value = value()
             assert isinstance(value, float | int)
-            if value <= target - tolerance:
-                motor.set_motor_speed(3200)
+            motor.set_motor_speed(3200)
+            if value <= target - tolerance and direction_is_cw:
                 motor.turn_ccw() # OR cw
-            elif value >= target + tolerance:
-                motor.set_motor_speed(3200)
+                direction_is_cw = False
+            elif value >= target + tolerance and not direction_is_cw:
+                direction_is_cw = True
                 motor.turn_cw() # OR ccw, just the opposite of line 31
         goals = (
             ActionList([])
