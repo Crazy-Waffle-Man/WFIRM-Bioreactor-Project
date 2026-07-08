@@ -9,7 +9,7 @@ from serial_helpers import AutoSerial
 
 def get_data_from_arduino(serial: AutoSerial, key: str) -> Generator[dict[str, Any]]:
     """
-    Gets data from arduino running ./pid/pid.ino
+    Gets data from arduino running ./pressure_reader.ino
     """
     while True:
         response: str | None = serial.get_latest_response()
