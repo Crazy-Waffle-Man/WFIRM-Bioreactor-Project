@@ -107,7 +107,11 @@ class LiveGraph:
         if minx != maxx:
             self.ax.set_xlim(minx, maxx)
         if miny != maxy:
-            self.ax.set_ylim(miny, maxy)
+            if maxy - miny < 1:
+                mean = (miny + maxy) / 2
+                self.ax.set_ylim(mean - 0.5, mean + 0.5)
+            else:
+                self.ax.set_ylim(miny, maxy)
 
         # update the plotted line and redraw
         self.line.set_data(x_values, list(self.y_values))
