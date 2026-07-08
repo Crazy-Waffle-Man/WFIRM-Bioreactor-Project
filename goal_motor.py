@@ -56,8 +56,10 @@ class ActionTypes:
             self.args = args
         def exec(self):
             # print("Executing CallUntilTarget")
-            while not (self.getter() >= self.lower and self.getter() <= self.upper):
-                self.func(*self.args)
+            current_value = self.getter()
+            if current_value:
+                while not (self.getter() >= self.lower and self.getter() <= self.upper):
+                    self.func(*self.args)
     class Call(Action):
         def __init__(self, func: Callable, *args):
             self.func = func
