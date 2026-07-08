@@ -53,8 +53,10 @@ class ESI_MP2:
             return None
         return self.serial.send_command(f"X81E{speed}")
     def turn_cw(self):
+        print("Turning cw")
         return self.serial.send_command("X81C+")
     def turn_ccw(self):
+        print("Turning ccw")
         return self.serial.send_command("X81C-")
     def stop(self):
         return self.serial.send_command("X81!")
