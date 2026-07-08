@@ -21,7 +21,10 @@ class AutoSerial(serial.Serial):
             line = self.read_until(b"\n")
             if not line:
                 break
-            last_line = line.decode("ascii").strip()
+            try:
+                last_line = line.decode("ascii").strip()
+            except UnicodeDecodeError:
+                print("Could not decode latest response")
             if self.in_waiting == 0:
                 break
         return last_line
