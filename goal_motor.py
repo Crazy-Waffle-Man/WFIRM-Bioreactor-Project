@@ -42,6 +42,7 @@ class ActionTypes:
         def __init__(self, millis: float) -> None:
             self.delay = millis / 1000
         def exec(self):
+            print("Executing Delay action")
             time.sleep(self.delay)
     class CallUntilTarget(Action):
         def __init__(self, target: int | float, func: Callable, current_value_getter: Callable, tolerance: float = 0, *args) -> None:

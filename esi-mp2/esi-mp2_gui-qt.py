@@ -35,7 +35,6 @@ class MainWindow(QMainWindow):
     def setup_pressure_motor(self):
         def adaptive_motor_speed(target: int | float, motor: ESI_MP2, value: int | float | Callable, tolerance: int | float):
             global direction_is_cw
-            print("Adaptive motor speed")
             if isinstance(value, Callable):
                 value = value()
             assert isinstance(value, float | int)
