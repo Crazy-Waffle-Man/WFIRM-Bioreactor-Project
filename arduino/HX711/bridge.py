@@ -17,11 +17,16 @@ def get_data_from_arduino(serial: AutoSerial, key: str) -> Generator[dict[str, A
             response_dict = {}
             try:
                 response_dict = json.loads(response)
-
             except json.JSONDecodeError as e:
                 print(e)
-            if response_dict[key]:
+            finally:
+                ...
+                # print(response_dict)
+            try:
                 yield response_dict[key]
+            except KeyError as e:
+                # print(e)
+                ...
 
 if __name__ == "__main__":
     import live_graph
