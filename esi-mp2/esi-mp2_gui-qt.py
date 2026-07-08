@@ -9,6 +9,12 @@ from live_graph import LiveGraph
 from serial_helpers import ESI_MP2, AutoSerial
 from arduino.HX711.bridge import get_data_from_arduino
 from goal_motor import *
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("--perfusion_motor_port", "-f")
+parser.add_argument("--pressure_motor_port", "-p")
+parser.add_argument("--arduino_port", "-a")
+args = parser.parse_args()
 
 class MainWindow(QMainWindow):
     def __init__(self, perfusion_motor_port: str, pressure_motor_port: str, arduino_port: str) -> None:
@@ -247,10 +253,6 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(main_widget)
 
 app = QApplication([])
-
-perfusion_motor_port = input("Perfusion motor port: ")
-pressure_motor_port = input("Pressure motor port: ")
-arduino_port = input("Arduino port: ")
-window = MainWindow(perfusion_motor_port, pressure_motor_port, arduino_port)
+window = MainWindow(args.perfusion_motor_port, args.pressure_motor_port, args.arduino_port)
 
 app.exec()
