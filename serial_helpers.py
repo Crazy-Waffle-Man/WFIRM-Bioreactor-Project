@@ -48,7 +48,7 @@ class ESI_MP2:
         """
         Set the motor speed to `speed` steps per second
         """
-        if speed <= 0 or speed >= 3200:
+        if speed < 0 or speed > 3200:
             print("Speed must be between 0 and 3200 steps/s")
             return None
         return self.serial.send_command(f"X81E{speed}")
