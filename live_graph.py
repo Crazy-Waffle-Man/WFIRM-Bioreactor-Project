@@ -22,6 +22,11 @@ class LiveGraph:
         self.interval = interval
         self.widget = None
     
+    @property
+    def latest_value(self):
+        return self.y_values[-1] if self.y_values else None
+    def get_latest_value(self):
+        return self.latest_value
     def get_widget(self, parent=None):
         if self.widget is None:
             self.widget = FigureCanvas(self.fig)
