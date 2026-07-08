@@ -21,7 +21,7 @@ class MainWindow(QMainWindow):
         # GUI setup
         self.setup_widgets()
 
-        # self.setup_pressure_motor()
+        self.setup_pressure_motor()
         self.pressure_motor.go()
         self.show()
 
@@ -31,27 +31,27 @@ class MainWindow(QMainWindow):
                 value = value()
             assert isinstance(value, float | int)
             if value <= target - tolerance:
-                motor.set_motor_speed(...)
+                motor.set_motor_speed(3200)
                 motor.turn_ccw() # OR cw
             elif value >= target + tolerance:
-                motor.set_motor_speed(...)
+                motor.set_motor_speed(3200)
                 motor.turn_cw() # OR ccw, just the opposite of line 31
         goals = (
             ActionList([])
             .append_action(ActionTypes.Delay(1000))
             .append_action( # Pressure 1
                 ActionTypes.Repeat(ActionTypes.Actions(
-                    ActionTypes.CallUntilTarget(..., adaptive_motor_speed, self.live_graph.get_latest_value, ..., self.pressure_motor, ..., self.live_graph.get_latest_value),
+                    ActionTypes.CallUntilTarget(30, adaptive_motor_speed, self.live_graph.get_latest_value, 1, 30, self.pressure_motor, self.live_graph.get_latest_value, 1),
                     ActionTypes.Call(self.pressure_motor.stop),
                     ActionTypes.Delay(10000)
-                ), 100)
+                ), 10)
             )
             .append_action( # Pressure 2
                 ActionTypes.Repeat(ActionTypes.Actions(
-                    ActionTypes.CallUntilTarget(..., adaptive_motor_speed, self.live_graph.get_latest_value, ..., self.pressure_motor, ..., self.live_graph.get_latest_value),
+                    ActionTypes.CallUntilTarget(0, adaptive_motor_speed, self.live_graph.get_latest_value, 1, 0, self.pressure_motor, self.live_graph.get_latest_value, 1),
                     ActionTypes.Call(self.pressure_motor.stop),
                     ActionTypes.Delay(10000)
-                ), 100)
+                ), 10)
             ) # etc
         )
         self.pressure_motor.actions = goals
