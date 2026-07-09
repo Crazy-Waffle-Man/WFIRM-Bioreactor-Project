@@ -2,23 +2,43 @@
     "$schema": "./schema.json",
     "cycle": [
         {
+            "action": "pressurize",
+            "pressure": 30,
+            "check_every": 500,
+            "duration": 100000
+        },
+        {
+            "action": "wait",
+            "duration": 10000
+        },
+        {
             "action": "multiple",
             "actions": [
                 {
                     "action": "pressurize",
-                    "pressure": 30,
-                    "check_every": 10,
-                    "duration": 100000
+                    "pressure": 0,
+                    "check_every": 500,
+                    "duration": 10000
                 },
                 {
                     "action": "wait",
                     "duration": 10000
+                },
+                {
+                    "action": "pressurize",
+                    "pressure": -10,
+                    "check_every": 500,
+                    "duration": 10000
+                },
+                {
+                    "action": "wait",
+                    "duration": 1000
                 }
             ]
         },
         {
             "action": "repeat",
-            "repeats": 2
+            "repeats": 5
         }
     ]
 }
