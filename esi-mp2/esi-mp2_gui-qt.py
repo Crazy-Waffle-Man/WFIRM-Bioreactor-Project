@@ -25,7 +25,6 @@ def adaptive_motor_speed(target: int | float, motor: ESI_MP2, value: int | float
     if value is None:
         return
     assert isinstance(value, (float, int))
-    motor.set_motor_speed(100)
     if value < target - tolerance:
         if not direction_is_cw:
             motor.turn_cw()
