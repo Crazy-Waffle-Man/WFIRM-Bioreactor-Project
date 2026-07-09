@@ -7,6 +7,7 @@ from PyQt6.QtWidgets import QMainWindow, QPushButton, QSlider, QTextEdit, QLabel
 from PyQt6.QtCore import Qt, QSize
 from live_graph import LiveGraph
 from serial_helpers import ESI_MP2, AutoSerial
+import matplotlib.pyplot as plt
 from arduino.HX711.bridge import get_data_from_arduino
 from goal_motor import *
 import action_parser
@@ -229,5 +230,5 @@ class MainWindow(QMainWindow):
 
 app = QApplication([])
 window = MainWindow(args.perfusion_motor_port, args.pressure_motor_port, args.arduino_port)
-
+plt.show()
 app.exec()
