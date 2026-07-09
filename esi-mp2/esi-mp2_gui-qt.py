@@ -9,33 +9,14 @@ from live_graph import LiveGraph
 from serial_helpers import ESI_MP2, AutoSerial
 from arduino.HX711.bridge import get_data_from_arduino
 from goal_motor import *
+import action_parser
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--perfusion_motor_port", "-f")
 parser.add_argument("--pressure_motor_port", "-p")
 parser.add_argument("--arduino_port", "-a")
+parser.add_argument("--file", "-f")
 args = parser.parse_args()
-
-direction_is_cw: bool = False
-
-def adaptive_motor_speed(target: int | float, motor: ESI_MP2, value: int | float | Callable, tolerance: int | float):
-    global direction_is_cw
-    if isinstance(value, Callable):
-        value = value()
-    if value is None:
-        return
-    assert isinstance(value, (float, int))
-    if value < target - tolerance:
-        if not direction_is_cw:
-            motor.turn_cw()
-            direction_is_cw = True
-    elif value > target + tolerance:
-        if direction_is_cw:
-            motor.turn_ccw()
-            direction_is_cw = False
-        else:
-            motor.turn_ccw()
-            direction_is_cw = False
 
 class MainWindow(QMainWindow):
     def __init__(self, perfusion_motor_port: str, pressure_motor_port: str, arduino_port: str) -> None:
@@ -45,33 +26,16 @@ class MainWindow(QMainWindow):
         self.perfusion_motor = ESI_MP2(AutoSerial(perfusion_motor_port))
         self.perfusion_motor.set_motor_speed(100)
         self.pressure_motor = GoalMotor(AutoSerial(pressure_motor_port))
-        # GUI setup
         self.setup_widgets()
-
+        action_parser.graph = self.live_graph
+        action_parser.motor = self.pressure_motor
+        action_parser.get_action_list(args.file)
         self.setup_pressure_motor()
         self.pressure_motor.go()
         self.show()
 
     def setup_pressure_motor(self):
-        goals = (
-            ActionList([])
-            .append_action(ActionTypes.Delay(1000))
-            .append_action( # Pressure 1
-                ActionTypes.Repeat(ActionTypes.Actions(
-                    ActionTypes.CallUntilTarget(30, adaptive_motor_speed, self.live_graph.get_latest_value, 1, 30, self.pressure_motor, self.live_graph.get_latest_value, 1),
-                    ActionTypes.Call(self.pressure_motor.stop),
-                    ActionTypes.Delay(10000)
-                ), 10)
-            )
-            .append_action( # Pressure 2
-                ActionTypes.Repeat(ActionTypes.Actions(
-                    ActionTypes.CallUntilTarget(0, adaptive_motor_speed, self.live_graph.get_latest_value, 1, 0, self.pressure_motor, self.live_graph.get_latest_value, 1),
-                    ActionTypes.Call(self.pressure_motor.stop),
-                    ActionTypes.Delay(10000)
-                ), 10)
-            ) # etc
-        )
-        self.pressure_motor.actions = goals
+        self.pressure_motor.actions = action_parser.action_list
     
     def setup_widgets(self):
         main_widget = QWidget(self)
