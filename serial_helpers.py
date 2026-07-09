@@ -42,6 +42,7 @@ class AutoSerial(serial.Serial):
 class ESI_MP2:
     def __init__(self, serial: AutoSerial):
         self.serial = serial
+        self.set_motor_speed(600)
     def get_status(self):
         return self.serial.send_command("X81")
     def set_motor_speed(self, speed: int  = 1600):
