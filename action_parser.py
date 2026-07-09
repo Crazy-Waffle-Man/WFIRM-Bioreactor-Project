@@ -14,16 +14,16 @@ def adaptive_motor_speed(target: int | float, motor: ESI_MP2, value: int | float
     if isinstance(value, Callable):
         value = value()
     if value is None:
-        print("value is none")
+        # print("value is none")
         return
     assert isinstance(value, (float, int))
     if value < target - tolerance:
-        print("Value less than goal")
+        # print("Value less than goal")
         if direction != 1:
             motor.turn_cw()
             direction = 1
     elif value > target + tolerance:
-        print("Value greater than goal")
+        # print("Value greater than goal")
         if direction != -1:
             motor.turn_ccw()
             direction = -1
