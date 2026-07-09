@@ -8,25 +8,24 @@ graph: LiveGraph
 motor: GoalMotor
 action_list = ActionList([])
 
-direction_is_cw: bool = False
+direction: int = 0
 def adaptive_motor_speed(target: int | float, motor: ESI_MP2, value: int | float | Callable, tolerance: int | float):
-    global direction_is_cw
+    global direction
     if isinstance(value, Callable):
+        print(f"Called {value.__name__} to get value")
         value = value()
     if value is None:
+        print("value is none")
         return
     assert isinstance(value, (float, int))
     if value < target - tolerance:
-        if not direction_is_cw:
+        if direction != 1:
             motor.turn_cw()
-            direction_is_cw = True
+            direction = 1
     elif value > target + tolerance:
-        if direction_is_cw:
+        if direction != -1:
             motor.turn_ccw()
-            direction_is_cw = False
-        else:
-            motor.turn_ccw()
-            direction_is_cw = False
+            direction = -1
 
 def parse_action(action: dict) -> Action | None:
     # print(action["action"])
