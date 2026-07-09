@@ -59,10 +59,17 @@ def parse_action(action: dict) -> Action | None:
                     action["duration"]
                 )
         case "repeat":
-            for i in range(action["repeats"]):
-                return action_list[-1]
+            previous_action = action_list[-1] if action_list else None
+            if previous_action is None or not isinstance(previous_action, Action):
+                return None
+            return ActionTypes.Repeat(previous_action, int(action["repeats"]))
         case "multiple":
-            return ActionTypes.Actions(parse_action(act) for act in action["actions"])
+            parsed_actions = []
+            for act in action["actions"]:
+                parsed_act = parse_action(act)
+                if parsed_act is not None:
+                    parsed_actions.append(parsed_act)
+            return ActionTypes.Actions(*parsed_actions)
 
 def get_action_list(file: str):
     data = read(file)

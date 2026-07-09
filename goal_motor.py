@@ -36,7 +36,7 @@ class ActionTypes:
             self.action = action
         def exec(self):
             # print(f"Executing repeat action...")
-            for i in range(self.repeats):
+            for i in range(int(self.repeats // 1)):
                 self.action.exec()
     class Delay(Action):
         def __init__(self, millis: float) -> None:
@@ -74,7 +74,7 @@ class ActionTypes:
 
 class ActionList(list):
     def __init__(self, iterable: Iterable) -> None:
-        super().__init__([item for item in iterable if item is Action])
+        super().__init__(item for item in iterable if isinstance(item, Action))
     def exec(self):
         for action in self:
             if isinstance(action, Action):
@@ -82,5 +82,7 @@ class ActionList(list):
             else:
                 raise ValueError(f"ActionList expects to only be populated with Action objects. Found {type(action)} instead: {action}")
     def append_action(self, action: Action):
+        if not isinstance(action, Action):
+            raise ValueError(f"ActionList expects to only be populated with Action objects. Found {type(action)} instead: {action}")
         self.append(action)
         return self # Make it chainable
