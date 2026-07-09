@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/product.schema.json",
+  "title": "Pressure script",
+  "description": "An abstraction of the Actions in /goal_motor.py",
+  "type": "object",
+  "properties": {
+    "cycle": {
+        "$ref": "#/$defs/multiple"
+    }
+  },
+  "required": ["cycle"],
+  "$defs": {
+    "multiple": {
+        "type": "array",
+        "description": "Multiple actions to run",
+        "items": {
+            "type": "object",
+            "oneOf": [
+                {
+                    "properties": {
+                        "action": {"const": "pressurize"},
+                        "pressure": {
+                            "type": "number",
+                            "description": "Millibar to pressurize to"
+                        },
+                        "duration": {
+                            "type": "number", 
+                            "description": "How long to hold pressure for (millis)",
+                            "exclusiveMinimum": 0
+                        },
+                        "check_every": {
+                            "type": "number",
+                            "description": "How often to check the pressure (after reaching it) and adjust if needed (millis).",
+                            "exclusiveMinimum": 0
+                        }
+                    }
+                },
+                {
+                    "properties": {
+                        "action": {"const": "wait"},
+                        "duration": {
+                            "type": "number",
+                            "description": "How long to wait (millis)",
+                            "exclusiveMinimum": 0
+                        }
+                    }
+                },
+                {
+                    "properties": {
+                        "action": {
+                            "const": "repeat"
+                        },
+                        "repeats": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    }
+                },
+                {
+                    "properties": {
+                        "action": {
+                            "const": "multiple"
+                        },
+                        "actions": {
+                            "type": "array",
+                            "$ref": "#/$defs/multiple"
+                        }
+                    }
+                }
+            ]
+        }
+    }
+  }
+}

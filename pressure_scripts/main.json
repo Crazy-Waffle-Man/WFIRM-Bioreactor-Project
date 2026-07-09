@@ -1,0 +1,39 @@
+{
+    "$schema": "./schema.json",
+    "cycle": [
+        {
+            "action": "multiple",
+            "actions": [
+                {
+                    "action": "pressurize",
+                    "pressure": 30,
+                    "check_every": 10,
+                    "duration": 100000
+                },
+                {
+                    "action": "wait",
+                    "duration": 10000
+                }
+            ]
+        },
+        {
+            "action": "repeat",
+            "repeats": 2
+        },
+        {
+            "action": "multiple",
+            "actions": [
+                {
+                    "action": "pressurize",
+                    "pressure": 0,
+                    "check_every": 10000,
+                    "duration": 100000
+                },
+                {
+                    "action": "wait",
+                    "duration": 10000
+                }
+            ]
+        }
+    ]
+}
