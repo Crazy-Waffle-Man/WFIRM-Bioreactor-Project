@@ -17,7 +17,7 @@ parser.add_argument("--perfusion_motor_port", "-f")
 parser.add_argument("--pressure_motor_port", "-p")
 parser.add_argument("--arduino_port", "-a")
 parser.add_argument("--file", "-r")
-parser.add_argument("--graph_points", "-g", default=50)
+parser.add_argument("--graph_points", "-g", default = 50, type = int)
 args = parser.parse_args()
 
 class MainWindow(QMainWindow):
