@@ -5,6 +5,7 @@ from matplotlib.lines import Line2D
 from matplotlib.figure import Figure
 import time
 from collections import deque
+from threading import Lock
 
 class LiveGraph:
     def __init__(self, maxlen: int = 50, interval: int = 1000):
@@ -21,10 +22,12 @@ class LiveGraph:
         # default interval for animation (ms)
         self.interval = interval
         self.widget = None
+        self.lock = Lock()
     
     @property
     def latest_value(self):
-        return self.y_values[-1] if self.y_values else None
+        with self.lock:
+            return self.y_values[-1] if self.y_values else None
     def get_latest_value(self):
         return self.latest_value
     def set_title(self, title: str) -> None:
@@ -84,7 +87,10 @@ class LiveGraph:
         )
         return self.animation
     
-    def update(self, y_value: int | float) -> Line2D:
+    def update(self, y_value: int | float | None) -> Line2D:
+        if y_value is None:
+            return self.line
+
         # record current time and store relative time (seconds since first update)
         now = time.time()
         if not hasattr(self, "start_time") or self.start_time is None:
@@ -92,12 +98,15 @@ class LiveGraph:
         rel_time = now - self.start_time
 
         # append a single timestamp and value
-        self.time_values.append(rel_time)
-        self.y_values.append(y_value)
+        with self.lock:
+            self.time_values.append(rel_time)
+            self.y_values.append(y_value)
+            time_values = list(self.time_values)
+            y_values = list(self.y_values)
 
         # convert absolute times to relative times from the latest sample
-        max_time = max(self.time_values)
-        x_values = [t - max_time for t in self.time_values]
+        max_time = max(time_values)
+        x_values = [t - max_time for t in time_values]
 
         # Next 8 lines are O(2n) for both self.x_values and self.y_values
         minx = min(x_values)

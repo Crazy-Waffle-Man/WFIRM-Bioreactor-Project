@@ -230,5 +230,5 @@ class MainWindow(QMainWindow):
 
 app = QApplication([])
 window = MainWindow(args.perfusion_motor_port, args.pressure_motor_port, args.arduino_port)
-plt.show()
+
 app.exec()

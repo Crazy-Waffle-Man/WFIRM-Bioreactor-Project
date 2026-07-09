@@ -64,6 +64,7 @@ class ActionTypes:
                 if self.lower <= current_value <= self.upper:
                     break
                 self.func(*self.args)
+                time.sleep(0.05)
     class Call(Action):
         def __init__(self, func: Callable, *args):
             self.func = func
