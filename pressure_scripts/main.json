@@ -7,7 +7,7 @@
                 {
                     "action": "pressurize",
                     "pressure": 30,
-                    "check_every": 1000,
+                    "check_every": 500,
                     "duration": 100000
                 },
                 {
@@ -17,16 +17,12 @@
             ]
         },
         {
-            "action": "repeat",
-            "repeats": 2
-        },
-        {
             "action": "multiple",
             "actions": [
                 {
                     "action": "pressurize",
                     "pressure": 0,
-                    "check_every": 1000,
+                    "check_every": 500,
                     "duration": 100000
                 },
                 {

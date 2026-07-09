@@ -47,11 +47,11 @@ def parse_action(action: dict) -> Action | None:
                         pressure, 
                         adaptive_motor_speed,
                         graph.get_latest_value,
-                        1,
+                        0.25,
                         pressure,
                         motor,
                         graph.get_latest_value,
-                        1
+                        0.25
                     ),
                     ActionTypes.Call(stop_motor),
                     ActionTypes.Delay(interval)
