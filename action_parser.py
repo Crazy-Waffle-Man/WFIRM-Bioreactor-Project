@@ -12,20 +12,26 @@ direction: int = 0
 def adaptive_motor_speed(target: int | float, motor: ESI_MP2, value: int | float | Callable, tolerance: int | float):
     global direction
     if isinstance(value, Callable):
-        print(f"Called {value.__name__} to get value")
         value = value()
     if value is None:
         print("value is none")
         return
     assert isinstance(value, (float, int))
     if value < target - tolerance:
+        print("Value less than goal")
         if direction != 1:
             motor.turn_cw()
             direction = 1
     elif value > target + tolerance:
+        print("Value greater than goal")
         if direction != -1:
             motor.turn_ccw()
             direction = -1
+
+def stop_motor():
+    global direction
+    motor.stop()
+    direction = 0
 
 def parse_action(action: dict) -> Action | None:
     # print(action["action"])
@@ -47,7 +53,7 @@ def parse_action(action: dict) -> Action | None:
                         graph.get_latest_value,
                         1
                     ),
-                    ActionTypes.Call(motor.stop),
+                    ActionTypes.Call(stop_motor),
                     ActionTypes.Delay(interval)
                 ),
                 repeats
