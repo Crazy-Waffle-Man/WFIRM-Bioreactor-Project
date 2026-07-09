@@ -17,6 +17,7 @@ parser.add_argument("--perfusion_motor_port", "-f")
 parser.add_argument("--pressure_motor_port", "-p")
 parser.add_argument("--arduino_port", "-a")
 parser.add_argument("--file", "-r")
+parser.add_argument("--graph_points", "-g", default=50)
 args = parser.parse_args()
 
 class MainWindow(QMainWindow):
@@ -160,7 +161,7 @@ class MainWindow(QMainWindow):
         p_tedit.textChanged.connect(p_tedit_changed)
 
         # Graphs
-        self.live_graph = LiveGraph(600)
+        self.live_graph = LiveGraph(args.graph_points)
         pressure_graph = self.live_graph.get_widget(
             graphs_widget,
             title="Pressure",
