@@ -29,7 +29,7 @@ def adaptive_motor_speed(target: int | float, motor: ESI_MP2, value: int | float
             direction_is_cw = False
 
 def parse_action(action: dict) -> Action | None:
-    print(action["action"])
+    # print(action["action"])
     match action["action"]:
         case "pressurize":
             pressure = action["pressure"]
