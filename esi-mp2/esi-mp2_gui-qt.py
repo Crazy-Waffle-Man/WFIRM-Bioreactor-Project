@@ -17,6 +17,27 @@ parser.add_argument("--arduino_port", "-a")
 args = parser.parse_args()
 
 direction_is_cw: bool = False
+
+def adaptive_motor_speed(target: int | float, motor: ESI_MP2, value: int | float | Callable, tolerance: int | float):
+    global direction_is_cw
+    if isinstance(value, Callable):
+        value = value()
+    if value is None:
+        return
+    assert isinstance(value, (float, int))
+    motor.set_motor_speed(100)
+    if value < target - tolerance:
+        if not direction_is_cw:
+            motor.turn_cw()
+            direction_is_cw = True
+    elif value > target + tolerance:
+        if direction_is_cw:
+            motor.turn_ccw()
+            direction_is_cw = False
+        else:
+            motor.turn_ccw()
+            direction_is_cw = False
+
 class MainWindow(QMainWindow):
     def __init__(self, perfusion_motor_port: str, pressure_motor_port: str, arduino_port: str) -> None:
         super().__init__()
@@ -33,18 +54,6 @@ class MainWindow(QMainWindow):
         self.show()
 
     def setup_pressure_motor(self):
-        def adaptive_motor_speed(target: int | float, motor: ESI_MP2, value: int | float | Callable, tolerance: int | float):
-            global direction_is_cw
-            if isinstance(value, Callable):
-                value = value()
-            assert isinstance(value, float | int)
-            motor.set_motor_speed(600)
-            if value < target - tolerance and direction_is_cw:
-                motor.turn_cw() # OR cw
-                direction_is_cw = True
-            elif value > target + tolerance and direction_is_cw:
-                direction_is_cw = False
-                motor.turn_ccw() # OR ccw, just the opposite of line 31
         goals = (
             ActionList([])
             .append_action(ActionTypes.Delay(1000))
