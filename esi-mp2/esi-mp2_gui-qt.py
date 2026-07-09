@@ -32,8 +32,8 @@ class MainWindow(QMainWindow):
         action_parser.motor = self.pressure_motor
         action_parser.get_action_list(args.file)
         self.setup_pressure_motor()
-        self.pressure_motor.go()
         self.show()
+        self.pressure_motor.go()
 
     def setup_pressure_motor(self):
         self.pressure_motor.actions = action_parser.action_list
