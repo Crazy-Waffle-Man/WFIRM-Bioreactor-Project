@@ -15,7 +15,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--perfusion_motor_port", "-f")
 parser.add_argument("--pressure_motor_port", "-p")
 parser.add_argument("--arduino_port", "-a")
-parser.add_argument("--file", "-f")
+parser.add_argument("--file", "-r")
 args = parser.parse_args()
 
 class MainWindow(QMainWindow):
