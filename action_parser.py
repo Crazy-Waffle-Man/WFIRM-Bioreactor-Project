@@ -89,6 +89,7 @@ if __name__ == "__main__":
     parser.add_argument("--arduino_port", "-a")
     parser.add_argument("--file", "-f")
     args = parser.parse_args()
+    
     motor = GoalMotor(AutoSerial(args.pressure_motor_port))
     arduino_serial = AutoSerial(args.arduino_port)
     graph = LiveGraph(50)

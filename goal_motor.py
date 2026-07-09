@@ -80,7 +80,8 @@ class ActionList(list):
             if isinstance(action, Action):
                 action.exec()
             else:
-                raise ValueError(f"ActionList expects to only be populated with Action objects. Found {type(action)} instead.")
+                ...
+                # raise ValueError(f"ActionList expects to only be populated with Action objects. Found {type(action)} instead: {action}")
     def append_action(self, action: Action):
         self.append(action)
         return self # Make it chainable
