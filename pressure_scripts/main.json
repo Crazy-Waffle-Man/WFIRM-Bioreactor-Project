@@ -7,7 +7,7 @@
                 {
                     "action": "pressurize",
                     "pressure": 30,
-                    "check_every": 10,
+                    "check_every": 1000,
                     "duration": 100000
                 },
                 {
@@ -26,7 +26,7 @@
                 {
                     "action": "pressurize",
                     "pressure": 0,
-                    "check_every": 10000,
+                    "check_every": 1000,
                     "duration": 100000
                 },
                 {
