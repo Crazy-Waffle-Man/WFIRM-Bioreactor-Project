@@ -160,7 +160,7 @@ class MainWindow(QMainWindow):
         p_tedit.textChanged.connect(p_tedit_changed)
 
         # Graphs
-        self.live_graph = LiveGraph(50)
+        self.live_graph = LiveGraph(600)
         pressure_graph = self.live_graph.get_widget(
             graphs_widget,
             title="Pressure",
