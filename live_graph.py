@@ -7,11 +7,14 @@ import time
 from collections import deque
 from threading import Lock
 
+from datetime import datetime
+
 class LiveGraph:
-    def __init__(self, maxlen: int = 50, interval: int = 1000):
+    def __init__(self, maxlen: int = 50, interval: int = 1000, logging: bool = False):
         """
         Create a live-updating graph with up to `maxlen` data points that updates every `interval` ms.
         """
+        self.values: list[tuple[str, float | int]] = [] # Cleared and written to file once len = 50
         self.time_values = deque([], maxlen)
         self.y_values = deque([], maxlen)
         self.fig, self.ax = plt.subplots()
@@ -23,6 +26,23 @@ class LiveGraph:
         self.interval = interval
         self.widget = None
         self.lock = Lock()
+        now = datetime.now()
+        self.file = now.strftime("logging/%Y-%m-%d_%H-%M-%S.log")
+        now = now.strftime("%Y-%m-%d %H:%M:%S")
+        try:
+            import inspect
+            caller = inspect.stack()[1]
+            with open(self.file, "x") as file:
+                file.write(f"Datalogging for the LiveGraph, starting at {now} while running {caller.filename}\n")
+        except FileExistsError:
+            print(f"Somehow, it has been this time before. Failed to create log file {self.file}")
+        except FileNotFoundError:
+            from os import mkdir
+            mkdir("logging")
+            import inspect
+            caller = inspect.stack()[1]
+            with open(self.file, "x") as file:
+                file.write(f"Datalogging for the LiveGraph, starting at {now} while running {caller.filename}\n")
     
     @property
     def latest_value(self):
@@ -92,17 +112,25 @@ class LiveGraph:
             return self.line
 
         # record current time and store relative time (seconds since first update)
-        now = time.time()
+        now = datetime.now()
+        ts = now.timestamp()
         if not hasattr(self, "start_time") or self.start_time is None:
-            self.start_time = now
-        rel_time = now - self.start_time
+            self.start_time = ts
+        rel_time = ts - self.start_time
 
         # append a single timestamp and value
         with self.lock:
             self.time_values.append(rel_time)
             self.y_values.append(y_value)
             time_values = list(self.time_values)
-            y_values = list(self.y_values)
+            self.values.append((now.strftime("%Y-%m-%d@%H:%M:%S.%f")[:-3], y_value))
+            # y_values = list(self.y_values)
+
+        if len(self.values) >= 50:
+            with open(self.file, "a") as file:
+                for value in self.values:
+                    file.write(f"{value[0]}: {value[1]}\n")
+            self.values = []
 
         # convert absolute times to relative times from the latest sample
         max_time = max(time_values)
