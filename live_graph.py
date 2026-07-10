@@ -2,8 +2,6 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.lines import Line2D
-from matplotlib.figure import Figure
-import time
 from collections import deque
 from threading import Lock
 

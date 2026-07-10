@@ -1,7 +1,6 @@
 from typing import Iterable, Callable
 import time
 import serial_helpers
-from live_graph import LiveGraph
 from threading import Thread
 
 class GoalMotor(serial_helpers.ESI_MP2):

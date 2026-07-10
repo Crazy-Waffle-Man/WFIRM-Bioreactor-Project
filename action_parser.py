@@ -3,6 +3,7 @@ from typing import Callable
 from serial_helpers import ESI_MP2
 from goal_motor import *
 from arduino.HX711.bridge import get_data_from_arduino
+from live_graph import LiveGraph
 
 graph: LiveGraph
 motor: GoalMotor
