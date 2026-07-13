@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import filedialog
 import datetime
 import matplotlib.pyplot as plt
+import os
 
 import live_graph
 
@@ -11,6 +12,11 @@ file_path = filedialog.askopenfilename(defaultextension=".log", initialdir="./lo
 
 if not file_path:
     raise SystemExit("No log file selected.")
+
+skip: bool = False
+if os.path.getsize(file_path) >= 10240:
+    print("Large file detected. Skipping data to save time")
+    skip = True
 
 with open(file_path, "r") as f:
     lines = f.read().splitlines()
@@ -24,7 +30,12 @@ start_time = first_line.removeprefix("Datalogging for the LiveGraph, starting at
 title = f"{file_name}, {start_time}"
 
 def read(lines):
+    current_iter = 0
     for line in lines[1:]:
+        if skip and current_iter % 3 == 0:
+            current_iter %= 3
+            continue
+        current_iter += 1
         if not line.strip():
             continue
 
@@ -37,7 +48,7 @@ def read(lines):
         time = datetime.datetime.strptime(timestamp_text, "%Y-%m-%d@%H:%M:%S.%f").timestamp()
         yield y, time
 
-graph = live_graph.LiveGraph(maxlen=None, logging=False, override_x_data=True, interval=20)
+graph = live_graph.LiveGraph(maxlen=None, logging=False, override_x_data=True, interval=1)
 graph.set_title(title)
 graph.set_xlabel("Time")
 graph.set_ylabel("Value")
