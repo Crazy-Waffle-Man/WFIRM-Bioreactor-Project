@@ -32,10 +32,11 @@ title = f"{file_name}, {start_time}"
 def read(lines):
     current_iter = 0
     for line in lines[1:]:
+        current_iter += 1
         if skip and current_iter % 3 == 0:
             current_iter %= 3
             continue
-        current_iter += 1
+        
         if not line.strip():
             continue
 
