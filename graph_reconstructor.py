@@ -14,8 +14,10 @@ if not file_path:
     raise SystemExit("No log file selected.")
 
 skip: bool = False
+skip_interval = 0
 if os.path.getsize(file_path) >= 10240:
     print("Large file detected. Skipping data to save time")
+    skip_interval = int(input("How infrequently to read data: "))
     skip = True
 
 with open(file_path, "r") as f:
@@ -33,10 +35,10 @@ def read(lines):
     current_iter = 0
     for line in lines[1:]:
         current_iter += 1
-        if skip and current_iter % 3 == 0:
-            current_iter %= 3
+        if skip and current_iter % skip_interval == 0:
+            current_iter %= skip_interval
             continue
-        
+
         if not line.strip():
             continue
 
