@@ -17,7 +17,7 @@ skip: bool = False
 skip_interval = 0
 if os.path.getsize(file_path) >= 10240:
     print("Large file detected. Skipping data to save time")
-    skip_interval = int(input("How infrequently to read data: "))
+    skip_interval = max(1, int(input("How infrequently to read data: ")))
     skip = True
 
 with open(file_path, "r") as f:
@@ -32,11 +32,8 @@ start_time = first_line.removeprefix("Datalogging for the LiveGraph, starting at
 title = f"{file_name}, {start_time}"
 
 def read(lines):
-    current_iter = 0
-    for line in lines[1:]:
-        current_iter += 1
-        if skip and current_iter % skip_interval == 0:
-            current_iter %= skip_interval
+    for index, line in enumerate(lines[1:], start=1):
+        if skip and index % skip_interval != 0:
             continue
 
         if not line.strip():

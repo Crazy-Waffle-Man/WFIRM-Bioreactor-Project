@@ -175,7 +175,7 @@ class LiveGraph:
 
 
 if __name__ == "__main__":
-    graph = LiveGraph(interval=100)
+    graph = LiveGraph(interval=100, logging=True)
     plt.title("Test graph")
     plt.xlabel("Time")
     plt.ylabel("Random values")
