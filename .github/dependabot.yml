@@ -1,0 +1,12 @@
+version: 2
+updates:
+  - package-ecosystem: "pip" # Instructs Dependabot to look for Python/pip files
+    directory: "/"           # Location of your dependency files (root directory)
+    schedule:
+      interval: "weekly"     # Options: "daily", "weekly", "monthly"
+    
+    # Optional: Group updates into a single PR to reduce noise
+    groups:
+      python-dependencies:
+        patterns:
+          - "*"
