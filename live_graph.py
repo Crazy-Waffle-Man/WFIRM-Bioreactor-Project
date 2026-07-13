@@ -1,53 +1,56 @@
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import matplotlib.dates as mdates
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.lines import Line2D
 from collections import deque
 from threading import Lock
-
 from datetime import datetime
 
 class LiveGraph:
-    def __init__(self, maxlen: int = 50, interval: int = 1000, logging: bool = False):
+    def __init__(self, maxlen: int | None = 50, interval: int = 1000, logging: bool = False, override_x_data=False):
         """
         Create a live-updating graph with up to `maxlen` data points that updates every `interval` ms.
         """
-        self.values: list[tuple[str, float | int]] = [] # Cleared and written to file once len = 50
-        self.time_values = deque([], maxlen)
-        self.y_values = deque([], maxlen)
+        self.values: list[tuple[str, float | int]] = []
+        self.time_values: deque[float] = deque([], maxlen)
+        self.override_x_data = override_x_data
+        self.y_values: deque[float] = deque([], maxlen)
         self.fig, self.ax = plt.subplots()
-        # create an empty Line2D so we can update its data later
         self.line, = self.ax.plot([], [], lw=2, color="blue")
-        # don't start an automatic animation by default; updates happen when `update` is called
         self.animation = None
-        # default interval for animation (ms)
         self.interval = interval
         self.widget = None
         self.lock = Lock()
+
         now = datetime.now()
         self.file = now.strftime("logging/%Y-%m-%d_%H-%M-%S.log")
-        now = now.strftime("%Y-%m-%d %H:%M:%S")
-        try:
-            import inspect
-            caller = inspect.stack()[1]
-            with open(self.file, "x") as file:
-                file.write(f"Datalogging for the LiveGraph, starting at {now} while running {caller.filename}\n")
-        except FileExistsError:
-            print(f"Somehow, it has been this time before. Failed to create log file {self.file}")
-        except FileNotFoundError:
-            from os import mkdir
-            mkdir("logging")
-            import inspect
-            caller = inspect.stack()[1]
-            with open(self.file, "x") as file:
-                file.write(f"Datalogging for the LiveGraph, starting at {now} while running {caller.filename}\n")
-    
+        self.logging = logging
+
+        if self.logging:
+            try:
+                import inspect
+                caller = inspect.stack()[1]
+                with open(self.file, "x") as file:
+                    file.write(f"Datalogging for the LiveGraph, starting at {now.strftime('%Y-%m-%d %H:%M:%S')} while running {caller.filename}\n")
+            except FileExistsError:
+                print(f"Somehow, it has been this time before. Failed to create log file {self.file}")
+            except FileNotFoundError:
+                from os import mkdir
+                mkdir("logging")
+                import inspect
+                caller = inspect.stack()[1]
+                with open(self.file, "x") as file:
+                    file.write(f"Datalogging for the LiveGraph, starting at {now.strftime('%Y-%m-%d %H:%M:%S')} while running {caller.filename}\n")
+
     @property
     def latest_value(self):
         with self.lock:
             return self.y_values[-1] if self.y_values else None
+
     def get_latest_value(self):
         return self.latest_value
+
     def set_title(self, title: str) -> None:
         self.ax.set_title(title)
 
@@ -58,11 +61,7 @@ class LiveGraph:
         self.ax.set_ylabel(label)
 
     def get_widget(self, parent=None, title: str | None = None, xlabel: str | None = None, ylabel: str | None = None):
-        """Return the FigureCanvas widget. Optionally set title and axis labels on the figure.
-
-        When embedding the canvas in a GUI, prefer passing `title`, `xlabel` and `ylabel`
-        here so the labels are applied to this figure's Axes instead of the global `plt`.
-        """
+        """Return the FigureCanvas widget. Optionally set title and axis labels on the figure."""
         if title is not None:
             self.set_title(title)
         if xlabel is not None:
@@ -77,24 +76,22 @@ class LiveGraph:
         return self.widget
 
     def start_animation(self, frames=None, interval: int | None = None):
-        """Start a live `FuncAnimation` that calls `update()` for each frame.
-
-        - `frames` may be any iterable/generator producing y-values. If omitted,
-          a simple random integer generator is used for demonstration.
-        - `interval` overrides the instance default interval (in ms).
-        Returns the created `FuncAnimation`.
-        """
+        """Start a live `FuncAnimation` that calls `update()` for each frame."""
         if frames is None:
             def _default_gen():
                 from random import randint
                 while True:
                     yield randint(0, 50)
             frames = _default_gen()
+
         if interval is None:
             interval = self.interval
-        # animation will call our update(frame) where frame is a y-value
-        def _update(y: int | float):
-            self.update(y)
+
+        def _update(y: int | float | tuple):
+            if isinstance(y, tuple):
+                self.update(*y)
+            else:
+                self.update(y)
         self.animation = animation.FuncAnimation(
             self.fig,
             lambda y: _update(y),
@@ -104,43 +101,64 @@ class LiveGraph:
             cache_frame_data=False,
         )
         return self.animation
-    
-    def update(self, y_value: int | float | None) -> Line2D:
+
+    def update(self, y_value: int | float | None, x_value: int | float | None = None) -> Line2D:
         if y_value is None:
             return self.line
 
-        # record current time and store relative time (seconds since first update)
         now = datetime.now()
-        ts = now.timestamp()
-        if not hasattr(self, "start_time") or self.start_time is None:
-            self.start_time = ts
-        rel_time = ts - self.start_time
+        if self.override_x_data:
+            rel_time = x_value if x_value is not None else now.timestamp()
+        else:
+            ts = now.timestamp()
+            if not hasattr(self, "start_time") or self.start_time is None:
+                self.start_time = ts
+            rel_time = ts - self.start_time
 
-        # append a single timestamp and value
         with self.lock:
-            self.time_values.append(rel_time)
-            self.y_values.append(y_value)
-            time_values = list(self.time_values)
-            self.values.append((now.strftime("%Y-%m-%d@%H:%M:%S.%f")[:-3], y_value))
-            # y_values = list(self.y_values)
+            self.time_values.append(float(rel_time))
+            self.y_values.append(float(y_value))
 
-        if len(self.values) >= 50:
-            with open(self.file, "a") as file:
-                for value in self.values:
-                    file.write(f"{value[0]}: {value[1]}\n")
-            self.values = []
+            if self.logging:
+                self.values.append((now.strftime("%Y-%m-%d@%H:%M:%S.%f")[:-3], y_value))
 
-        # convert absolute times to relative times from the latest sample
-        max_time = max(time_values)
-        x_values = [t - max_time for t in time_values]
+            if len(self.values) >= 50:
+                if self.logging:
+                    with open(self.file, "a") as file:
+                        for value in self.values:
+                            file.write(f"{value[0]}: {value[1]}\n")
+                self.values = []
 
-        # Next 8 lines are O(2n) for both self.x_values and self.y_values
-        minx = min(x_values)
-        maxx = max(x_values)
-        miny = min(self.y_values)
-        maxy = max(self.y_values)
-        if minx != maxx:
-            self.ax.set_xlim(minx, maxx)
+        time_values = list(self.time_values)
+
+        if self.override_x_data:
+            x_plot_values: list[datetime | float] = [
+                datetime.fromtimestamp(t) if isinstance(t, (int, float)) else t
+                for t in time_values
+            ]
+        else:
+            if time_values:
+                start_time = time_values[0]
+                x_plot_values = [t - start_time for t in time_values]
+            else:
+                x_plot_values = []
+
+        y_plot_values = list(self.y_values)
+
+        if x_plot_values:
+            minx = min(x_plot_values)
+            maxx = max(x_plot_values)
+            if minx != maxx:
+                self.ax.set_xlim(minx, maxx) # type: ignore
+
+            if self.override_x_data:
+                self.ax.xaxis_date()
+                self.ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d %H:%M:%S"))
+        else:
+            minx = maxx = None
+
+        miny = min(y_plot_values)
+        maxy = max(y_plot_values)
         if miny != maxy:
             if maxy - miny < 1:
                 mean = (miny + maxy) / 2
@@ -148,19 +166,18 @@ class LiveGraph:
             else:
                 self.ax.set_ylim(miny, maxy)
 
-        # update the plotted line and redraw
-        self.line.set_data(x_values, list(self.y_values))
+        self.line.set_data(x_plot_values, y_plot_values) # type: ignore
         try:
             self.fig.canvas.draw_idle()
         except Exception:
             self.fig.canvas.draw()
         return self.line
 
+
 if __name__ == "__main__":
     graph = LiveGraph(interval=100)
     plt.title("Test graph")
     plt.xlabel("Time")
     plt.ylabel("Random values")
-    # start live animation using the default random generator
     graph.start_animation()
     plt.show()
