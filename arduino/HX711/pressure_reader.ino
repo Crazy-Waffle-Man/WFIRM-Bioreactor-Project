@@ -1,15 +1,15 @@
 #include "HX711.h"
-#include <MedianFilterLib.h>
+// #include <MedianFilterLib.h>
 
 #define calibration_factor 8076  // obtained from calibration sketch
 
 // HX711 Load Cell Configuration
 #define DOUT A1
 #define CLK A0
-#define GAIN 128
-#define PRESSURE_FACTOR 0.0002584  // V/psi, might need to be recalibrated.
-#define EXCITATION_VOLTAGE 5
-#define PSI_TO_MPA 0.00689476  // 1 psi to MPa
+// #define GAIN 128
+// #define PRESSURE_FACTOR 0.0002584  // V/psi, might need to be recalibrated.
+// #define EXCITATION_VOLTAGE 5
+// #define PSI_TO_MPA 0.00689476  // 1 psi to MPa
 
 HX711 scale;
 

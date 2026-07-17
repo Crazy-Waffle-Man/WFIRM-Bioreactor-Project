@@ -28,7 +28,7 @@ class ActionTypes:
                 if isinstance(action, Action):
                     action.exec()
                 else:
-                    raise ValueError(f"ActionList expects to only be populated with Action objects. Found {type(action)} instead.")
+                    raise ValueError(f"Actions action expects to only be populated with Action objects. Found {type(action)} instead.")
     class Repeat(Action):
         def __init__(self, action: Action, repeats: int) -> None:
             self.repeats = repeats

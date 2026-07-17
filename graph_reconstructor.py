@@ -48,10 +48,11 @@ def read(lines):
         time = datetime.datetime.strptime(timestamp_text, "%Y-%m-%d@%H:%M:%S.%f").timestamp()
         yield y, time
 
-graph = live_graph.LiveGraph(maxlen=None, logging=False, override_x_data=True, interval=1)
-graph.set_title(title)
-graph.set_xlabel("Time")
-graph.set_ylabel("Value")
-graph.start_animation(read(lines))
+if __name__ == "__main__":
+    graph = live_graph.LiveGraph(maxlen=None, logging=False, override_x_data=True, interval=1)
+    graph.set_title(title)
+    graph.set_xlabel("Time")
+    graph.set_ylabel("Value")
+    graph.start_animation(read(lines))
 
-plt.show()
+    plt.show()
