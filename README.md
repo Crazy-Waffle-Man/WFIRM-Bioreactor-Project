@@ -1,5 +1,7 @@
 # Usage
-Welcome. This repository was made to hold the source code for a program I participated in at the Wake Forest Institute for Regenerative Medicine.
+Welcome. This repository was made to hold the source code for a program I participated in at the Wake Forest Institute for Regenerative Medicine where I helped to develop the below bioreactor.
+
+![Image of the bioreactor](bioreactor.png)
 
 ## Invoking `main.py`
 
