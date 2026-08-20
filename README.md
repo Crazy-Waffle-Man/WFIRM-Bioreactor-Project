@@ -10,7 +10,7 @@ Welcome. This repository was made to hold the source code for a program I partic
 - `--perfusion-motor-port` or `-f` is the port where the manually controlled motor is found (Via the top part of the GUI created when running `main.py`).
 - `--pressure_motor_port` or `-p` is the port where the programattically-controlled motor is connected.
 - `--arduino_port` or `-a` is the port where the Arduino is connected. The code for the Arduino assumes use of the HX711 load cell amplifier in conjunction with a pressure sensor.
-- `--graph_points` or `-g` is an optional argument that takes an integer and defaults to `50` if none is provided. This controlls how many points can be stored at once by the live graph.
+- `--graph_points` or `-g` is an optional argument that takes an integer and defaults to `50` if none is provided. This controls how many points can be stored at once by the live graph.
 ---
 
 ## Serial Helpers
