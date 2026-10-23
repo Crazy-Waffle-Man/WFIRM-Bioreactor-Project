@@ -41,4 +41,4 @@ The backend through which the pressure is maintained is contained within `goal_m
 All graphing uses `live_graph.LiveGraph`, which is a dressed-up plot from `matplotlib`. Once you set up the object, you can start graphing by calling `LiveGraph#start_animation`, passing a `Generator` to use as the source for data.
 
 ---
-This repository will not be actively maintained but feel free to open a PR. I'll get around to it eventually.
+This repository will not be actively maintained, but feel free to open a PR. I'll get around to it eventually.
