@@ -11,6 +11,9 @@ Welcome. This repository was made to hold the source code for a program I partic
 - `--pressure_motor_port` or `-p` is the port where the programattically-controlled motor is connected.
 - `--arduino_port` or `-a` is the port where the Arduino is connected. The code for the Arduino assumes use of the HX711 load cell amplifier in conjunction with a pressure sensor.
 - `--graph_points` or `-g` is an optional argument that takes an integer and defaults to `50` if none is provided. This controls how many points can be stored at once by the live graph.
+
+Port names can be found via running `dmesg -w` and watching the terminal as you plug in the cables. Depending on your configuration, this command may require `sudo`.
+
 ---
 
 ## Serial Helpers
